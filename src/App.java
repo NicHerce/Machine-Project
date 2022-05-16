@@ -2,28 +2,16 @@
     Medical Laboratory Information System 
 */
 
-import java.io.File;
-import java.io.Writer;
-import java.net.MalformedURLException;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.Scanner;
 
-import com.itextpdf.text.BaseColor;
-import com.itextpdf.text.Document;
-import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.Element;
-import com.itextpdf.text.Image;
-import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.pdf.PdfPCell;
-import com.itextpdf.text.pdf.PdfPTable;
-import com.itextpdf.text.pdf.PdfWriter;
+/*/
+ *  Aian ( 05/16/22 ): Optimized and shortened
+/*/
+import java.io.*;
+import java.time.*;
+import java.util.*;
+import java.net.MalformedURLException;
+import com.itextpdf.text.*;
+import com.itextpdf.text.pdf.*;
 
 public class App {
     static Scanner input = new Scanner(System.in);
@@ -683,17 +671,17 @@ public class App {
         } while ("Y".equalsIgnoreCase(answer)); // loops again if user answers "Y"
 
     }
-    
-    // Creates UID for the patient
+
+    /*/
+     *  Creates UID for the patient
+     *  Aian ( 05/16/22 ): Optimized the code
+    /*/
     public static String generateUID(int patient_num) {
         String retval;
-        int year = Calendar.getInstance().get(Calendar.YEAR);
-        int month = Calendar.getInstance().get(Calendar.MONTH);
-        String letters = null;
 
-        letters = formatValue(patient_num);
+        LocalDate date = LocalDate.now();
         
-        retval = String.format("P%d%02d%s", year, month, letters);
+        retval = String.format("P%04d%02d%s", date.getYear(), date.getMonthValue(), formatValue(patient_num));
         
         return retval;
     }
@@ -715,6 +703,9 @@ public class App {
         return ret_val.toString();
     }
     
+    /*/
+     *  Aian ( 05/16/22 ): Unused function?
+    /*/
     public static void wordLength() {
         Scanner input = new Scanner(System.in);
 

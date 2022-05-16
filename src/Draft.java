@@ -1,0 +1,731 @@
+/* 
+    Medical Laboratory Information System 
+*/
+
+import java.io.File;
+import java.io.Writer;
+import java.net.MalformedURLException;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.Scanner;
+
+import com.itextpdf.text.BaseColor;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Element;
+import com.itextpdf.text.Image;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
+
+public class Draft {
+    static Scanner input = new Scanner(System.in);
+    private static ArrayList<Patient> records = new ArrayList<Patient>();
+
+    public static void main(String[] args) throws Exception {
+        String answer;
+        
+        // Reads Patients.txt file to get records
+        readRecord();
+
+        do{
+            mainMenu();
+            
+            // Ask user if they want to make another transaction
+            System.out.print("\nReturn to Main Menu? [Y/N]: ");
+            answer = input.next(); input.nextLine();
+        }while("y".equalsIgnoreCase(answer));
+        
+        // Write records to Patients.txt file
+        writeRecord();
+    }
+
+    // Reads Patients.txt file to get records
+    public static void readRecord() {
+        System.out.println("readRecord function:");
+        
+        try {
+            Scanner scanner = new Scanner(new File("Patients.txt"));
+            String line = "";    // stores a line in the records
+            String parts[] = {}; // array of String to store the parts of the line
+
+            while(scanner.hasNextLine()) {
+                line = scanner.nextLine();      // stores a line from Patients.txt file
+                parts = line.split(";"); // separates the line into parts
+
+                // assigns the portions of the String for the parameters of Patient object
+                String uID = parts[0];
+                String lastName = parts[1];
+                String firstName = parts[2];
+                String middleName = parts[3];
+                long birthday = Long.parseLong(parts[4]);
+                String gender = parts[5];
+                String address = parts[6];
+                long phoneNum = Long.parseLong(parts[7]);
+                long nID = Long.parseLong(parts[8]);
+                Boolean deleted = false;
+                String reason = "";
+
+                // if patient is deleted, update the variables
+                if (parts.length > 9) {
+                    if ("D".equals(parts[9])) deleted = true;
+                    reason = parts[10];
+
+                    System.out.printf("%s;%s;%s;%s;%d;%s;%s;%d;%d;%s;%s;\n", 
+                        uID, lastName, firstName, middleName, birthday, gender, address, phoneNum, nID, parts[9], reason
+                    );
+
+                } else {
+                    // check record
+                    System.out.printf("%s;%s;%s;%s;%d;%s;%s;%d;%d;\n", 
+                        uID, lastName, firstName, middleName, birthday, gender, address, phoneNum, nID  
+                    );
+                }
+
+                // add new Patient object to records ArrayList
+                records.add(new Patient(uID, lastName, firstName, middleName, birthday, gender, address, phoneNum, nID, deleted, reason));
+            }
+
+            System.out.println("\n");
+
+        } catch (FileNotFoundException e) {
+            System.out.println("An error occured");
+            e.printStackTrace();
+        }
+        
+    }
+    
+    // Write records to Patients.txt file
+    public static void writeRecord() {
+        
+        try {
+            Writer writer = new BufferedWriter(new FileWriter("Patients.txt", false));
+            
+            for (Patient patient : records) {
+                // patient is not deleted
+                if (patient.getIsDeleted() == false) {
+                    writer.write(
+                        patient.getUID() + ";" +
+                        patient.getLastName() + ";" +
+                        patient.getFirstName() + ";" +
+                        patient.getMiddleName() + ";" +
+                        patient.getBirthday() + ";" +
+                        patient.getGender() + ";" +
+                        patient.getAddress() + ";" +
+                        patient.getPhoneNum() + ";" +
+                        patient.getNationalID() + ";\n"
+                    );
+                    
+                } else { // patient is deleted
+                    writer.write(
+                        patient.getUID() + ";" +
+                        patient.getLastName() + ";" +
+                        patient.getFirstName() + ";" +
+                        patient.getMiddleName() + ";" +
+                        patient.getBirthday() + ";" +
+                        patient.getGender() + ";" +
+                        patient.getAddress() + ";" +
+                        patient.getPhoneNum() + ";" +
+                        patient.getNationalID() + ";D;" +
+                        patient.getReason() + ";\n"
+                    );
+                }
+                
+            }
+
+            writer.close();
+            System.out.println("Successfully wrote to the file\n");
+            
+        } catch(IOException e) {
+            System.out.println("An error occured.");
+            e.printStackTrace();
+        }
+    }
+
+    // Main Menu of the Medical Laboratory Information System 
+    public static void mainMenu() throws MalformedURLException, IOException, DocumentException {
+        int answer;
+
+        // Main Menu        
+        System.out.print (
+            "Medical Laboratory Information System\n" +
+            "[1] Manage Patient Records\n" +
+            "[2] Manage Services\n" +
+            "[3] Manage Laboratory Results\n\n" +
+            "Select a transaction: "
+        );
+
+        // Checks whether the user's input is within the choices:
+        answer = checkInput(1, 3);
+
+        // Executes based on the answer of the user:
+        switch(answer) {
+            case 1: manageRecord(); break;
+            case 2: System.out.println("Manage Services"); break;
+            case 3: System.out.println("Manage Laboratory Results"); break;
+        }
+    }
+
+    // Manage Patient Records
+    public static void manageRecord() throws MalformedURLException, IOException, DocumentException {
+        int answer;
+
+        System.out.print (
+            "\nManage Petient Records\n" +
+            "[1] Add New Patient\n" +
+            "[2] Edit Patient Record\n" +
+            "[3] Delete Patient Record\n" +
+            "[4] Search Patient Record\n" +
+            "[0] Return to Main Menu\n\n" +
+            "Select a transaction: "
+        );
+
+        answer = checkInput(0, 4);
+
+        switch(answer) {
+            case 0: mainMenu(); break;
+            case 1: addPatient(); break;
+            case 2: editPatient(); break;
+            case 3: deletePatient(); break;
+            case 4: searchPatient(); break;
+        }
+    }
+
+    // Checks whether the user's input is within the choices:
+    public static int checkInput(int limit1, int limit2) {
+        int answer;
+        
+        do{
+            answer = input.nextInt(); input.nextLine();
+            
+            if(answer < limit1 || answer > limit2 )
+                System.out.print("Invalid input.\n\nSelect a transaction: ");
+
+        }while(answer < limit1 || answer > limit2);
+
+        return answer;
+    }
+
+    public static String checkAnswer() {
+        String answer;
+
+        do{
+            answer = input.next(); input.nextLine();
+            if(!"Y".equalsIgnoreCase(answer) && !"N".equalsIgnoreCase(answer))
+                System.out.println("Invalid input.");
+        } while (!"Y".equalsIgnoreCase(answer) && !"N".equalsIgnoreCase(answer)); 
+        
+        return answer;
+    }
+
+    // Checks if user input is in records ArrayList 
+    public static Boolean filterSearch(String answer, Patient patient) {
+        if( answer.equalsIgnoreCase(patient.getUID()) || 
+            answer.equalsIgnoreCase(patient.getLastName()) || 
+            answer.equalsIgnoreCase(patient.getFirstName()) || 
+            answer.equalsIgnoreCase(patient.getMiddleName()) || 
+            answer.equals(String.valueOf(patient.getBirthday())) ||
+            answer.equals(String.valueOf(patient.getNationalID())) ) {
+            // Search success
+            return true;
+        }
+        
+        // Search failed
+        return false;
+    }
+
+    // Print patient's PDF file
+    public static void printPDF(Patient patient) throws MalformedURLException, IOException, DocumentException {
+        // age of patient 
+        Calendar currentDate = new GregorianCalendar();
+        long age = currentDate.get(Calendar.YEAR) - (patient.getBirthday() / 10000);
+        if( currentDate.get(Calendar.MONTH) < patient.getBirthday()/100%100 || 
+            currentDate.get(Calendar.MONTH) == patient.getBirthday()/100%100 && 
+            currentDate.get(Calendar.DAY_OF_MONTH) < patient.getBirthday()%10) {
+            age--;
+        } 
+
+        // full name of patient
+        String fullname = patient.getLastName() + ", " + patient.getFirstName() + " " + patient.getMiddleName();
+            
+        try {
+            // create document object
+            Document doc = new Document();
+
+            // create PdfWriter object for writing content
+            String fileName = patient.getLastName() + "_" + "Request UID" + ".pdf";
+            PdfWriter.getInstance(doc, new FileOutputStream(fileName));
+
+            // open the Document 
+            doc.open();
+
+            // create new image object with filename of the company logo
+            Image img = Image.getInstance("logo.png");
+            Image line = Image.getInstance("line.png");
+
+            
+            // adjust size of image and align it to the center
+            img.scaleAbsolute(60f, 60f);
+            img.setAlignment(Element.ALIGN_CENTER);
+            line.scaleAbsolute(700f, 25f);
+            line.setAlignment(Element.ALIGN_CENTER);
+
+            // create new paragraph object
+            Paragraph text = new Paragraph("Ambatukam, PH\nTelephone: (8)949533");
+            text.setAlignment(Element.ALIGN_CENTER);
+
+            // create table
+            PdfPTable table = new PdfPTable(2);
+            PdfPCell cell = new PdfPCell();
+            cell.setBorderColor(BaseColor.WHITE);
+            cell.setHorizontalAlignment(Element.ALIGN_LEFT);
+            // cell.setColspan(4);
+            
+            // full name of patient
+            cell.setPhrase(new Paragraph("Name: " + fullname));
+            table.addCell(cell);
+
+            // speciment ID
+            cell.setPhrase(new Paragraph("Speciment ID: "));
+            table.addCell(cell);
+            
+            // patient ID
+            cell.setPhrase(new Paragraph("Patient ID: " + patient.getUID()));
+            table.addCell(cell);
+            
+            // collection date of specimen
+            cell.setPhrase(new Paragraph("Collection Date: "));
+            table.addCell(cell);
+
+            // age of patient 
+            cell.setPhrase(new Paragraph("Age: " + age));
+            table.addCell(cell);
+
+            // birthday of patient 
+            cell.setPhrase(new Paragraph("Birthday: " + patient.getBirthday()));
+            table.addCell(cell);
+
+            // gender of patient 
+            cell.setPhrase(new Paragraph("Gender: " + patient.getGender()));
+            table.addCell(cell);
+
+            // phone number of patient
+            cell.setPhrase(new Paragraph(String.format("Phone Number: %011d", patient.getPhoneNum())));
+            table.addCell(cell);
+
+            // create test and result table
+            PdfPTable tableTwo = new PdfPTable(2);
+            cell.setBorderColor(BaseColor.BLACK);
+            cell.setHorizontalAlignment(Element.ALIGN_LEFT);
+
+            // table headers
+            cell.setPhrase(new Paragraph("Test"));
+            tableTwo.addCell(cell);
+
+            cell.setPhrase(new Paragraph("Result"));
+            tableTwo.addCell(cell);
+
+            // add the contents to the document
+            doc.add(img);
+            doc.add(text);
+            doc.add(line);
+            doc.add(table);
+            doc.add(line);
+            doc.add(tableTwo);
+            doc.add(line);
+
+            // close the document
+            doc.close();
+
+            // File successfully written
+            System.out.println("PDF file created");
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Add New Patient
+    public static void addPatient() {
+        String answer;
+        int patient_num = records.size() - 1;
+        String uID;
+        int day = Calendar.getInstance().get(Calendar.DATE);
+
+        // If it is the first day of the month, reset patient_num to 0 (AAA00)
+        // Else, increase the patient_num
+        if(day == 1) patient_num = 0;
+        else patient_num++;
+        
+        uID = generateUID(patient_num); // Create UID for New Patient
+
+        System.out.print("Last Name: ");
+        String pLastName = input.nextLine();
+
+        System.out.print("First Name: ");
+        String pFirstName = input.nextLine();
+
+        System.out.print("Middle Name: ");
+        String pMiddleName = input.nextLine();
+
+        System.out.print("Birthday (YYYYMMDD): ");
+        long pBirthday = input.nextLong(); input.nextLine();
+
+        System.out.print("Gender (M/F): ");
+        String pGender = input.nextLine();
+
+        System.out.print("Address: ");
+        String pAddress = input.nextLine();
+
+        System.out.print("Phone Number: ");
+        long pPhoneNum = input.nextLong();
+
+        System.out.print("National ID Number: ");
+        long pNationalID = input.nextLong();
+
+        // Save Patient Record:
+        System.out.print("Save Patient Record [Y/N]? ");
+        answer = checkAnswer();
+        
+        if(answer.equalsIgnoreCase("y")) {
+            records.add(new Patient(uID, pLastName, pFirstName, pMiddleName, pBirthday, pGender, pAddress, pPhoneNum, pNationalID, false, ""));
+        }
+        
+        // Display all records
+        System.out.println("\nPatient Records: ");
+        for(Patient patient : records) {
+            System.out.println (
+                patient.getUID() + ";" +
+                patient.getLastName() + ";" +
+                patient.getFirstName() + ";" +
+                patient.getMiddleName() + ";" +
+                patient.getBirthday() + ";" +
+                patient.getGender() + ";" +
+                patient.getAddress() + ";" +
+                patient.getPhoneNum() + ";" +
+                patient.getNationalID() + ";"
+            );
+        }
+
+        System.out.println("Successfully added patient");
+    }
+
+    // Edit Patient
+    public static void editPatient() {
+        String answer; // user's input to [Y/N] prompt
+        String info;   // info of patient   
+        int found;     // counter for number of results
+            
+        do {
+            // reset answer and found variable at start of loop
+            answer = "N";
+            found = 0;
+
+            // input for searching patient in the records
+            System.out.print("\nEnter Patient Information: ");
+            info = input.nextLine();
+
+            // loops through the records to look for patient
+            for (Patient patient : records) {
+                if (filterSearch(info, patient)) found++; // counts number of patient's with the same data as input     
+            }
+
+            // if multiple patients detected, outputs row if there is no header.
+            if (found > 1) {
+                // header row
+                System.out.printf("%-13s %-10s %-10s %-11s %-9s %-8s %-15s %-12s %-10s\n",
+                    "Patient's UID", "Last Name", "First Name", "Middle Name",
+                    "Birthday", "Gender", "Address", "Phone Number", "National ID no."
+                );
+
+                // display list of multiple patients
+                for (Patient patient : records) {
+                    if(filterSearch(info, patient)) {
+                        System.out.printf("%-13s %-10s %-10s %-11s %-9d %-8s %-15s %-12d %-10d\n",
+                            patient.getUID(), patient.getLastName(), patient.getFirstName(), 
+                            patient.getMiddleName(), patient.getBirthday(), patient.getGender(),
+                            patient.getAddress(), patient.getPhoneNum(), patient.getNationalID()
+                        );
+                    }
+                }
+
+                // ask user to input UID of the patient record to update
+                System.out.print("\nEnter the patient's UID that you want to update: ");
+                info = input.nextLine();
+                found = 1;
+
+            } 
+            
+            if (found == 1) { // show search result when exactly one patient is found
+
+                for (Patient patient : records) {
+                    if (filterSearch(info, patient)) {
+                        // display patient record to be edited
+                        System.out.println(
+                            patient.getUID() + "\n" +
+                            patient.getLastName() + ", " + patient.getFirstName() + " " + 
+                            patient.getMiddleName() + "\n" + patient.getBirthday() + "\n" +
+                            patient.getAddress() + "\n" + patient.getPhoneNum() + "\n" + 
+                            patient.getNationalID() + "\n"
+                        );
+
+                        // ask user which patient data they want to update in Patients.txt
+                        System.out.println("Choose data to update:\n[1] Address\n[2] Phone Number");
+                        int response = checkInput(1, 2);
+
+                        // ask user to input new data for updating
+                        System.out.print("Enter updated info: ");
+                        String newInfo = input.nextLine();
+                        
+                        switch (response) {
+                            case 1: patient.setAddress(newInfo); break;
+                            case 2: patient.setPhoneNum(Long.parseLong(newInfo)); break;
+                        }
+                                                
+                        // indicate that the patient information in Patients.txt is updated
+                        System.out.printf("The Address/Phone Number of patient %s has been updated.\n", patient.getUID());
+                        
+                    }
+                }
+
+                // if the user inputs 'Y' the loop will repeat
+                System.out.print("Do you want to edit another patient record? [Y/N]: ");
+                answer = input.nextLine();
+
+            } else { // if(found==0) patient is not found, ask user if they want to search again 
+                System.out.println("No record found.");
+                System.out.print("\nSearch again? [Y/N] ");
+                answer = checkAnswer();
+            }
+            
+        } while ("Y".equalsIgnoreCase(answer));
+
+    }
+
+    // Delete Patient
+    public static void deletePatient() {
+        String answer; // user's input to [Y/N] prompt
+        String info;   // info of patient   
+        int found;     // counter for number of results
+            
+        do {
+            // reset answer and found variable at start of loop
+            answer = "N";
+            found = 0;
+
+            // input for searching patient in the records
+            System.out.print("\nEnter Patient Information: ");
+            info = input.nextLine();
+
+            // loops through the records to look for patient
+            for (Patient patient : records) {
+                if (filterSearch(info, patient)) found++; // counts number of patient's with the same data as input     
+            }
+
+            // if multiple patients detected, outputs row if there is no header.
+            if (found > 1) {
+                // header row
+                System.out.printf("%-13s %-10s %-10s %-11s %-9s %-8s %-15s %-12s %-10s\n",
+                    "Patient's UID", "Last Name", "First Name", "Middle Name",
+                    "Birthday", "Gender", "Address", "Phone Number", "National ID no."
+                );
+
+                // display list of multiple patients
+                for (Patient patient : records) {
+                    if(filterSearch(info, patient)) {
+                        System.out.printf("%-13s %-10s %-10s %-11s %-9d %-8s %-15s %-12d %-10d\n",
+                            patient.getUID(), patient.getLastName(), patient.getFirstName(), 
+                            patient.getMiddleName(), patient.getBirthday(), patient.getGender(),
+                            patient.getAddress(), patient.getPhoneNum(), patient.getNationalID()
+                        );
+                    }
+                }
+
+                // ask user to input UID of the patient record to delete
+                System.out.print("\nEnter the patient's UID that you want to delete: ");
+                info = input.nextLine();
+                found = 1;
+
+            } 
+            
+            if (found == 1) { // show search result when exactly one patient is found
+
+                for (Patient patient : records) {
+                    if (filterSearch(info, patient)) {
+                        // display patient record to be deleted
+                        System.out.println(
+                            patient.getUID() + "\n" +
+                            patient.getLastName() + ", " + patient.getFirstName() + " " + 
+                            patient.getMiddleName() + "\n" + patient.getBirthday() + "\n" +
+                            patient.getAddress() + "\n" + patient.getPhoneNum() + "\n" + 
+                            patient.getNationalID() + "\n"
+                        );
+
+                        // ask user to confirm to delete patient
+                        System.out.print("Delete Patient? [Y/N]: ");
+                        String response = checkAnswer();
+
+                        // indicate that the patient record is deleted in Patients.txt file
+                        if("Y".equalsIgnoreCase(response)) {
+
+                            // ask user to give reason for deleting the patient record
+                            System.out.print("Reason: ");
+                            String reason = input.nextLine();
+
+                            patient.setIsDeleted(true);
+                            patient.setReason(reason);
+
+                            // for debugging
+                            // System.out.println(patient.getIsDeleted());
+                            // System.out.println(patient.getReason());
+
+                            // indicate that the patient is deleted from Patients.txt
+                            System.out.printf("Data of patient %s has been deleted.\n", patient.getUID());
+                        }
+                    }
+                }
+
+                // if the user inputs 'Y' the loop will repeat
+                System.out.print("Do you want to delete another patient record? [Y/N]: ");
+                answer = input.nextLine();
+
+            } else { // if(found==0) patient is not found, ask user if they want to search again 
+                System.out.println("No record found.");
+                System.out.print("\nSearch again? [Y/N] ");
+                answer = checkAnswer();
+            }
+            
+        } while ("Y".equalsIgnoreCase(answer));
+        
+    }
+
+    // Search Patient Record:
+    public static void searchPatient() throws MalformedURLException, IOException, DocumentException {
+        String answer; // user's input to prompt
+        int found = 0; // counter for number of results
+
+        do{
+            answer = "N";
+            found = 0;
+
+            // input for searching patient in the records
+            System.out.print("\nEnter Patient Information: ");
+            answer = input.nextLine();
+    
+            // loops through the records to look for patient
+            for (Patient patient : records) {
+                // counts number of patient's with the same data as input 
+                if(filterSearch(answer, patient)) found++;     
+            }
+
+            // outputs row if there is no header and if there are patient's with same data
+            if(found > 1) {
+                System.out.printf("%-13s %-10s %-10s %-11s %-9s %-8s %-15s %-12s %-10s\n",
+                    "Patient's UID", "Last Name", "First Name", "Middle Name",
+                    "Birthday", "Gender", "Address", "Phone Number", "National ID no."
+                );
+
+                // display list of multiple patients
+                for (Patient patient : records) {
+                    if(filterSearch(answer, patient)) {
+                        System.out.printf("%-13s %-10s %-10s %-11s %-9d %-8s %-15s %-12d %-10d\n",
+                            patient.getUID(), patient.getLastName(), patient.getFirstName(), 
+                            patient.getMiddleName(), patient.getBirthday(), patient.getGender(),
+                            patient.getAddress(), patient.getPhoneNum(), patient.getNationalID()
+                        );
+                    }
+                }
+
+                System.out.print("\nEnter the patient's UID that you want to display: ");
+                answer = input.nextLine();
+                found = 1;
+            }
+
+            // search result is exactly one patient
+            if(found == 1) { 
+                for (Patient patient : records) {
+                    if(filterSearch(answer, patient)) {
+                        System.out.println(
+                            patient.getUID() + "\n" +
+                            patient.getLastName() + ", " + patient.getFirstName() + " " + 
+                            patient.getMiddleName() + "\n" + patient.getBirthday() + "\n" +
+                            patient.getAddress() + "\n" + patient.getPhoneNum() + "\n" + 
+                            patient.getNationalID() + "\n"
+                        );
+
+                        System.out.printf("%-13s %-13s %-12s %-15s\n",
+                            "Request's UID", "Lab Test Type", "Request Date", "Result"
+                        );
+
+                        // asks user if they want to print laboratory test results
+                        System.out.print("Do you want to print a laboratory test result? [Y/N]: ");
+                        answer = checkAnswer();
+
+                        if("Y".equalsIgnoreCase(answer)) printPDF(patient);
+
+                        answer = "N";
+                    }
+                }
+
+            } else { // if(found==0) patient is not found, ask user if they want to search again
+                System.out.println("No record found.");
+                System.out.print("\nSearch again? [Y/N] ");
+                answer = checkAnswer();
+            }
+            
+        } while ("Y".equalsIgnoreCase(answer)); // loops again if user answers "Y"
+
+    }
+    
+    // Creates UID for the patient
+    public static String generateUID(int patient_num) {
+        String retval;
+        int year = Calendar.getInstance().get(Calendar.YEAR);
+        int month = Calendar.getInstance().get(Calendar.MONTH);
+        String letters = null;
+
+        letters = formatValue(patient_num);
+        
+        retval = String.format("P%d%02d%s", year, month, letters);
+        
+        return retval;
+    }
+
+    // Formats patient number
+    public static String formatValue(int i) {
+        var ret_val = new StringBuilder();
+
+        ret_val.insert(0, i % 10);
+        i /= 10;
+        ret_val.insert(0, i % 10);
+        i /= 10;
+        ret_val.insert(0, (char)('A' + (i % 26)));
+        i /= 26;
+        ret_val.insert(0, (char)('A' + (i % 26)));
+        i /= 26;
+        ret_val.insert(0, (char)('A' + (i % 26)));
+
+        return ret_val.toString();
+    }
+    
+    public static void wordLength() {
+        Scanner input = new Scanner(System.in);
+
+        System.out.print("Enter word: ");
+        String word = input.nextLine();
+        
+        System.out.println(word.length());
+    
+        input.close();
+    }
+
+}
+
+

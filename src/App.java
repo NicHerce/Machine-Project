@@ -139,6 +139,9 @@ public class App {
 
     // Main Menu of the Medical Laboratory Information System 
     public static void mainMenu() throws MalformedURLException, IOException, DocumentException {
+        
+        clear();
+
         int answer;
 
         // Main Menu        
@@ -163,10 +166,12 @@ public class App {
 
     // Manage Patient Records
     public static void manageRecord() throws MalformedURLException, IOException, DocumentException {
+        clear();
+        
         int answer;
 
         System.out.print (
-            "\nManage Petient Records\n" +
+            "Manage Petient Records\n" +
             "[1] Add New Patient\n" +
             "[2] Edit Patient Record\n" +
             "[3] Delete Patient Record\n" +
@@ -342,6 +347,8 @@ public class App {
 
     // Add New Patient
     public static void addPatient() {
+        clear();
+
         String answer;
         int patient_num = records.size() - 1;
         String uID;
@@ -382,11 +389,14 @@ public class App {
         System.out.print("Save Patient Record [Y/N]? ");
         answer = checkAnswer();
         
-        if(answer.equalsIgnoreCase("y")) {
+        if(answer.equalsIgnoreCase("y")) 
+        {
             records.add(new Patient(uID, pLastName, pFirstName, pMiddleName, pBirthday, pGender, pAddress, pPhoneNum, pNationalID, false, ""));
         }
         
         // Display all records
+        // Aian (05/17/22): Feels like this will be more cluttered once we have more entries, I suggest removing it
+        /*
         System.out.println("\nPatient Records: ");
         for(Patient patient : records) {
             System.out.println (
@@ -401,12 +411,28 @@ public class App {
                 patient.getNationalID() + ";"
             );
         }
+        */
 
-        System.out.println("Successfully added patient");
+        // Aian (05/17/22): Replaced the thing above with this.
+        System.out.println(uID + ";" + pLastName + ";" + pFirstName + ";" + pMiddleName + ";" + String.valueOf(pBirthday) + ";" + pGender + ";" + pAddress + ";" + String.valueOf(pPhoneNum) + ";" + String.valueOf(pNationalID));
+
+        // Aian (05/17/22): 
+        if ( answer.equalsIgnoreCase("y") )
+        {
+            System.out.print("Successfully added patient");
+            loading(3);
+        }
+        else
+        {
+            System.out.print("Patient not added");
+            loading(3);
+        }
     }
 
     // Edit Patient
     public static void editPatient() {
+        clear();
+        
         String answer; // user's input to [Y/N] prompt
         String info;   // info of patient   
         int found;     // counter for number of results
@@ -499,6 +525,8 @@ public class App {
 
     // Delete Patient
     public static void deletePatient() {
+        clear();
+        
         String answer; // user's input to [Y/N] prompt
         String info;   // info of patient   
         int found;     // counter for number of results
@@ -596,6 +624,8 @@ public class App {
 
     // Search Patient Record:
     public static void searchPatient() throws MalformedURLException, IOException, DocumentException {
+        clear();
+        
         String answer; // user's input to prompt
         int found = 0; // counter for number of results
 
@@ -715,6 +745,39 @@ public class App {
         System.out.println(word.length());
     
         input.close();
+    }
+
+    /*/
+     * Call clear() to clear current terminal screen
+     * Aian (05/17/22): Added this.
+    /*/
+    public static void clear()
+    {
+        System.out.print("\033[H\033[2J");
+        System.out.flush();
+    }
+
+    /*/
+     *  Visual Loading System
+     *  Creates ellipses per each 500 milisecond "tick" 
+     *  Always ends with a new line
+     *  Aian (05/17/22): Added this.
+    /*/
+    public static void loading( int ticks )
+    {
+        for ( int i = 0; i < ticks; i++ )
+        {
+            try {
+                Thread.sleep(500);
+            } catch (Exception e) 
+            {
+                System.out.println("An error occurred.");
+                e.printStackTrace();
+            }
+            System.out.print(".");
+            
+        }
+        System.out.println("");
     }
 
 }

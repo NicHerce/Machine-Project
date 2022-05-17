@@ -11,7 +11,7 @@ import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
 
   
-public class tae {
+public class Tae {
     public static void main(String args[]) throws Exception
     {
         String file = "addingTableToPDF.pdf";

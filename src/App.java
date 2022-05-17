@@ -477,7 +477,8 @@ public class App {
 
             } 
             
-            if (found == 1) { // show search result when exactly one patient is found
+            // show search result when exactly one patient is found
+            if (found == 1) { 
 
                 for (Patient patient : records) {
                     if (filterSearch(info, patient)) {

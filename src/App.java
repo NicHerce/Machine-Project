@@ -2,28 +2,16 @@
     Medical Laboratory Information System 
 */
 
-import java.io.File;
-import java.io.Writer;
-import java.net.MalformedURLException;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.Scanner;
 
-import com.itextpdf.text.BaseColor;
-import com.itextpdf.text.Document;
-import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.Element;
-import com.itextpdf.text.Image;
-import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.pdf.PdfPCell;
-import com.itextpdf.text.pdf.PdfPTable;
-import com.itextpdf.text.pdf.PdfWriter;
+/*/
+ *  Aian ( 05/16/22 ): Optimized and shortened
+/*/
+import java.io.*;
+import java.time.*;
+import java.util.*;
+import java.net.MalformedURLException;
+import com.itextpdf.text.*;
+import com.itextpdf.text.pdf.*;
 
 public class App {
     static Scanner input = new Scanner(System.in);
@@ -151,6 +139,9 @@ public class App {
 
     // Main Menu of the Medical Laboratory Information System 
     public static void mainMenu() throws MalformedURLException, IOException, DocumentException {
+        
+        clear();
+
         int answer;
 
         // Main Menu        
@@ -175,10 +166,12 @@ public class App {
 
     // Manage Patient Records
     public static void manageRecord() throws MalformedURLException, IOException, DocumentException {
+        clear();
+        
         int answer;
 
         System.out.print (
-            "\nManage Petient Records\n" +
+            "Manage Petient Records\n" +
             "[1] Add New Patient\n" +
             "[2] Edit Patient Record\n" +
             "[3] Delete Patient Record\n" +
@@ -354,6 +347,8 @@ public class App {
 
     // Add New Patient
     public static void addPatient() {
+        clear();
+
         String answer;
         int patient_num = records.size() - 1;
         String uID;
@@ -394,11 +389,14 @@ public class App {
         System.out.print("Save Patient Record [Y/N]? ");
         answer = checkAnswer();
         
-        if(answer.equalsIgnoreCase("y")) {
+        if(answer.equalsIgnoreCase("y")) 
+        {
             records.add(new Patient(uID, pLastName, pFirstName, pMiddleName, pBirthday, pGender, pAddress, pPhoneNum, pNationalID, false, ""));
         }
         
         // Display all records
+        // Aian (05/17/22): Feels like this will be more cluttered once we have more entries, I suggest removing it
+        /*
         System.out.println("\nPatient Records: ");
         for(Patient patient : records) {
             System.out.println (
@@ -413,12 +411,28 @@ public class App {
                 patient.getNationalID() + ";"
             );
         }
+        */
 
-        System.out.println("Successfully added patient");
+        // Aian (05/17/22): Replaced the thing above with this.
+        System.out.println(uID + ";" + pLastName + ";" + pFirstName + ";" + pMiddleName + ";" + String.valueOf(pBirthday) + ";" + pGender + ";" + pAddress + ";" + String.valueOf(pPhoneNum) + ";" + String.valueOf(pNationalID));
+
+        // Aian (05/17/22): 
+        if ( answer.equalsIgnoreCase("y") )
+        {
+            System.out.print("Successfully added patient");
+            loading(3);
+        }
+        else
+        {
+            System.out.print("Patient not added");
+            loading(3);
+        }
     }
 
     // Edit Patient
     public static void editPatient() {
+        clear();
+        
         String answer; // user's input to [Y/N] prompt
         String info;   // info of patient   
         int found;     // counter for number of results
@@ -511,6 +525,8 @@ public class App {
 
     // Delete Patient
     public static void deletePatient() {
+        clear();
+        
         String answer; // user's input to [Y/N] prompt
         String info;   // info of patient   
         int found;     // counter for number of results
@@ -608,6 +624,8 @@ public class App {
 
     // Search Patient Record:
     public static void searchPatient() throws MalformedURLException, IOException, DocumentException {
+        clear();
+        
         String answer; // user's input to prompt
         int found = 0; // counter for number of results
 
@@ -683,17 +701,17 @@ public class App {
         } while ("Y".equalsIgnoreCase(answer)); // loops again if user answers "Y"
 
     }
-    
-    // Creates UID for the patient
+
+    /*/
+     *  Creates UID for the patient
+     *  Aian ( 05/16/22 ): Optimized the code
+    /*/
     public static String generateUID(int patient_num) {
         String retval;
-        int year = Calendar.getInstance().get(Calendar.YEAR);
-        int month = Calendar.getInstance().get(Calendar.MONTH);
-        String letters = null;
 
-        letters = formatValue(patient_num);
+        LocalDate date = LocalDate.now();
         
-        retval = String.format("P%d%02d%s", year, month, letters);
+        retval = String.format("P%04d%02d%s", date.getYear(), date.getMonthValue(), formatValue(patient_num));
         
         return retval;
     }
@@ -715,6 +733,9 @@ public class App {
         return ret_val.toString();
     }
     
+    /*/
+     *  Aian ( 05/16/22 ): Unused function?
+    /*/
     public static void wordLength() {
         Scanner input = new Scanner(System.in);
 
@@ -724,6 +745,39 @@ public class App {
         System.out.println(word.length());
     
         input.close();
+    }
+
+    /*/
+     * Call clear() to clear current terminal screen
+     * Aian (05/17/22): Added this.
+    /*/
+    public static void clear()
+    {
+        System.out.print("\033[H\033[2J");
+        System.out.flush();
+    }
+
+    /*/
+     *  Visual Loading System
+     *  Creates ellipses per each 500 milisecond "tick" 
+     *  Always ends with a new line
+     *  Aian (05/17/22): Added this.
+    /*/
+    public static void loading( int ticks )
+    {
+        for ( int i = 0; i < ticks; i++ )
+        {
+            try {
+                Thread.sleep(500);
+            } catch (Exception e) 
+            {
+                System.out.println("An error occurred.");
+                e.printStackTrace();
+            }
+            System.out.print(".");
+            
+        }
+        System.out.println("");
     }
 
 }

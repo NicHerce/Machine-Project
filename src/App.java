@@ -14,6 +14,7 @@ import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
 
 public class App {
+
     static Scanner input = new Scanner(System.in);
     private static ArrayList<Patient> records = new ArrayList<Patient>();
     private static ArrayList<LabResults> requests = new ArrayList<LabResults>();
@@ -835,6 +836,8 @@ public class App {
 
     public static void addRequest()
     {
+
+        clear();
 
         
 

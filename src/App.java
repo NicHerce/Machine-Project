@@ -16,6 +16,7 @@ import com.itextpdf.text.pdf.*;
 public class App {
     static Scanner input = new Scanner(System.in);
     private static ArrayList<Patient> records = new ArrayList<Patient>();
+    private static ArrayList<LabResults> requests = new ArrayList<LabResults>();
 
     public static void main(String[] args) throws Exception {
         String answer;
@@ -34,6 +35,11 @@ public class App {
         // Write records to Patients.txt file
         writeRecord();
     }
+
+/********************************************************************************************************************************************/
+    /*/
+     *  Utilities
+    /*/
 
     // Reads Patients.txt file to get records
     public static void readRecord() {
@@ -164,32 +170,6 @@ public class App {
         }
     }
 
-    // Manage Patient Records
-    public static void manageRecord() throws MalformedURLException, IOException, DocumentException {
-        clear();
-        
-        int answer;
-
-        System.out.print (
-            "Manage Petient Records\n" +
-            "[1] Add New Patient\n" +
-            "[2] Edit Patient Record\n" +
-            "[3] Delete Patient Record\n" +
-            "[4] Search Patient Record\n" +
-            "[0] Return to Main Menu\n\n" +
-            "Select a transaction: "
-        );
-
-        answer = checkInput(0, 4);
-
-        switch(answer) {
-            case 0: mainMenu(); break;
-            case 1: addPatient(); break;
-            case 2: editPatient(); break;
-            case 3: deletePatient(); break;
-            case 4: searchPatient(); break;
-        }
-    }
 
     // Checks whether the user's input is within the choices:
     public static int checkInput(int limit1, int limit2) {
@@ -345,6 +325,70 @@ public class App {
         }
     }
 
+    /*/
+     * Call clear() to clear current terminal screen
+     * Aian (05/17/22): Added this.
+    /*/
+    public static void clear()
+    {
+        System.out.print("\033[H\033[2J");
+        System.out.flush();
+    }
+
+    /*/
+     *  Visual Loading System
+     *  Creates ellipses per each 500 milisecond "tick" 
+     *  Always ends with a new line
+     *  Aian (05/17/22): Added this.
+    /*/
+    public static void loading( int ticks )
+    {
+        for ( int i = 0; i < ticks; i++ )
+        {
+            try {
+                Thread.sleep(500);
+            } catch (Exception e) {
+                System.out.println("An error occurred.");
+                e.printStackTrace();
+            }
+            System.out.print(".");
+            
+        }
+        System.out.println("");
+    }
+
+/********************************************************************************************************************************************/
+    /*/
+     *  Patient System
+    /*/
+
+    // Manage Patient Records
+    public static void manageRecord() throws MalformedURLException, IOException, DocumentException {
+        clear();
+        
+        int answer;
+
+        System.out.print (
+            "Manage Patient Records\n" +
+            "[1] Add New Patient\n" +
+            "[2] Edit Patient Record\n" +
+            "[3] Delete Patient Record\n" +
+            "[4] Search Patient Record\n" +
+            "[0] Return to Main Menu\n\n" +
+            "Select a transaction: "
+        );
+
+        answer = checkInput(0, 4);
+
+        switch(answer) {
+            case 0: mainMenu(); break;
+            case 1: addPatient(); break;
+            case 2: editPatient(); break;
+            case 3: deletePatient(); break;
+            case 4: searchPatient(); break;
+        }
+    }
+
     // Add New Patient
     public static void addPatient() {
         clear();
@@ -359,7 +403,7 @@ public class App {
         if(day == 1) patient_num = 0;
         else patient_num++;
         
-        uID = generateUID(patient_num); // Create UID for New Patient
+        uID = generatepUID(patient_num); // Create UID for New Patient
 
         System.out.print("Last Name: ");
         String pLastName = input.nextLine();
@@ -707,8 +751,9 @@ public class App {
     /*/
      *  Creates UID for the patient
      *  Aian ( 05/16/22 ): Optimized the code
+     *  Aian ( 05/17/22 ): Made a unique function name (pUID)
     /*/
-    public static String generateUID(int patient_num) {
+    public static String generatepUID(int patient_num) {
         String retval;
 
         LocalDate date = LocalDate.now();
@@ -749,36 +794,50 @@ public class App {
         input.close();
     }
 
-    /*/
-     * Call clear() to clear current terminal screen
-     * Aian (05/17/22): Added this.
-    /*/
-    public static void clear()
-    {
-        System.out.print("\033[H\033[2J");
-        System.out.flush();
-    }
+/********************************************************************************************************************************************/
 
     /*/
-     *  Visual Loading System
-     *  Creates ellipses per each 500 milisecond "tick" 
-     *  Always ends with a new line
-     *  Aian (05/17/22): Added this.
+     *  Lab Results System
     /*/
-    public static void loading( int ticks )
-    {
-        for ( int i = 0; i < ticks; i++ )
-        {
-            try {
-                Thread.sleep(500);
-            } catch (Exception e) {
-                System.out.println("An error occurred.");
-                e.printStackTrace();
-            }
-            System.out.print(".");
-            
+
+    // Manage Patient Records
+    public static void manageRequests() throws MalformedURLException, IOException, DocumentException {
+        clear();
+        
+        int answer;
+
+        System.out.print (
+            "Manage Laboratory Requests\n" +
+            "[1] Add New Request\n" +
+            "[2] Search Request\n" +
+            "[3] Edit Request\n" +
+            "[0] Return to Main Menu\n\n" +
+            "Select a transaction: "
+        );
+
+        answer = checkInput(0, 4);
+
+        switch(answer) {
+            case 0: mainMenu(); break;
+            case 1: 
+            //addRequest(); 
+            break;
+            case 2: 
+            //editRequest(); 
+            break;
+            case 3: 
+            //deleteRequest(); 
+            break;
         }
-        System.out.println("");
+    }
+
+    // TODO: implement Services UID system into Lab Results
+
+    public static void addRequest()
+    {
+
+        
+
     }
 
 }

@@ -110,8 +110,8 @@ public class Draft {
                 long birthday = Long.parseLong(parts[4]);
                 String gender = parts[5];
                 String address = parts[6];
-                long phoneNum = Long.parseLong(parts[7]);
-                long nID = Long.parseLong(parts[8]);
+                String phoneNum = parts[7];
+                String nID = parts[8];
                 Boolean deleted = false;
                 String reason = "";
 
@@ -491,10 +491,10 @@ public class Draft {
         String pAddress = input.nextLine();
 
         System.out.print("Phone Number: ");
-        long pPhoneNum = input.nextLong();
+        String pPhoneNum = input.nextLine();
 
         System.out.print("National ID Number: ");
-        long pNationalID = input.nextLong();
+        String pNationalID = input.nextLine();
 
         // Save Patient Record:
         System.out.print("Save Patient Record [Y/N]? ");
@@ -608,7 +608,7 @@ public class Draft {
                         
                         switch (response) {
                             case 1: patient.setAddress(newInfo); break;
-                            case 2: patient.setPhoneNum(Long.parseLong(newInfo)); break;
+                            case 2: patient.setPhoneNum(newInfo); break;
                         }
                                                 
                         // indicate that the patient information in Patients.txt is updated

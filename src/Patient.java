@@ -7,13 +7,13 @@ public class Patient {
     private long birthday;
     private String gender;
     private String address;
-    private long phoneNum;
-    private long nationalID;
+    private String phoneNum;
+    private String nationalID;
     private Boolean isDeleted;
     private String reason;
     
     public Patient(String uID, String lastName, String firstName, String middleName, long birthday, String gender,
-            String address, long phoneNum, long nationalID, Boolean isDeleted, String reason) {
+            String address, String phoneNum, String nationalID, Boolean isDeleted, String reason) {
         UID = uID;
         this.lastName = lastName;
         this.firstName = firstName;
@@ -83,19 +83,19 @@ public class Patient {
         this.address = address;
     }
 
-    public long getPhoneNum() {
+    public String getPhoneNum() {
         return phoneNum;
     }
 
-    public void setPhoneNum(long phoneNum) {
+    public void setPhoneNum(String phoneNum) {
         this.phoneNum = phoneNum;
     }
 
-    public long getNationalID() {
+    public String getNationalID() {
         return nationalID;
     }
 
-    public void setNationalID(long nationalID) {
+    public void setNationalID(String nationalID) {
         this.nationalID = nationalID;
     }
 

@@ -414,7 +414,7 @@ public class App {
         */
 
         // Aian (05/17/22): Replaced the thing above with this.
-        System.out.println(uID + ";" + pLastName + ";" + pFirstName + ";" + pMiddleName + ";" + String.valueOf(pBirthday) + ";" + pGender + ";" + pAddress + ";" + String.valueOf(pPhoneNum) + ";" + String.valueOf(pNationalID));
+        System.out.println(uID + ";" + pLastName + ";" + pFirstName + ";" + pMiddleName + ";" + String.valueOf(pBirthday) + ";" + pGender + ";" + pAddress + ";" + String.valueOf(pPhoneNum) + ";" + String.valueOf(pNationalID) + ";");
 
         // Aian (05/17/22): 
         if ( answer.equalsIgnoreCase("y") )
@@ -477,7 +477,8 @@ public class App {
 
             } 
             
-            if (found == 1) { // show search result when exactly one patient is found
+            // show search result when exactly one patient is found
+            if (found == 1) { 
 
                 for (Patient patient : records) {
                     if (filterSearch(info, patient)) {
@@ -571,7 +572,8 @@ public class App {
 
             } 
             
-            if (found == 1) { // show search result when exactly one patient is found
+            // show search result when exactly one patient is found
+            if (found == 1) { 
 
                 for (Patient patient : records) {
                     if (filterSearch(info, patient)) {
@@ -769,8 +771,7 @@ public class App {
         {
             try {
                 Thread.sleep(500);
-            } catch (Exception e) 
-            {
+            } catch (Exception e) {
                 System.out.println("An error occurred.");
                 e.printStackTrace();
             }

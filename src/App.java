@@ -8,6 +8,7 @@
 /*/
 import java.io.*;
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.net.MalformedURLException;
 import com.itextpdf.text.*;
@@ -839,7 +840,137 @@ public class App {
 
         clear();
 
+        LabResults lbr = new LabResults();
+
+        String answer;
+        int requests_num = requests.size() - 1;
+        String sUID;
+        String rUID;
+        Patient patient = new Patient();
+
+        int day = LocalDate.now().getDayOfMonth();
+
+        System.out.println("");
+
+        // If it is the first day of the month, reset patient_num to 0 (AA00)
+        // Else, increase the patient_num
+        if(day == 1) requests_num = 0;
+        else requests_num++;
+
+        sUID = "CRP"; // TODO: User Selects service
+
+        rUID = sUID + LocalDate.now().format( DateTimeFormatter.ofPattern("YYYYMMdd") ) + "AA00"; // TODO: Place Holder Clear when rUID system has been set
+
+        System.out.println("Enter Information for Request:");
+
+        // Select Patient Prompt for request
+        patient = returnPatient();
+
+        // If User stops searching go back to menu
+        if ( patient == null )
+        {
+            return;
+        }
+        else
+        {
+
+            // Setup lbr
+
+            // rUID
+            lbr.setrUID(rUID);
+
+            // SetUP UID of Patient
+            lbr.setpUID(patient.getUID());
+
+            // Asks for Result
+            System.out.println("Enter Service Results:");
+            lbr.setResults(input.nextLine());
+
+            // Time Setup is here for more accuracy
+            lbr.reqDate = LocalDate.now().format( DateTimeFormatter.ofPattern("YYYYMMdd") );
+            lbr.reqTime = LocalTime.now().format( DateTimeFormatter.ofPattern("hhmm") );
+
+            //System.out.printf("%-15s;%-12s;", );
+
+        }
+
+    }
+
+    // Reusable Patient Search Engine
+    // Returns Patient data type when patient with matching parameters are found
+    // Its a loop until user stops
+    public static Patient returnPatient() {
         
+        clear();
+
+        String answer; // user's input to prompt
+        int found = 0; // counter for number of results
+
+        do{
+
+            answer = "N";
+            found = 0;
+
+            // input for searching patient in the records
+            System.out.print("\nEnter Patient Information: ");
+            answer = input.nextLine();
+    
+            // loops through the records to look for patient
+            for (Patient patient : records) {
+                // counts number of patient's with the same data as input 
+                if(filterSearch(answer, patient)) found++;     
+            }
+
+            // Outputs row per row if there is no header and if there are patient's with same data
+            if(found > 1) {
+
+                System.out.printf("%-13s %-10s %-10s %-11s %-9s %-8s %-15s %-12s %-10s\n",
+                    "Patient's UID", "Last Name", "First Name", "Middle Name",
+                    "Birthday", "Gender", "Address", "Phone Number", "National ID no."
+                );
+
+                // Print all Matching Patients
+                for (Patient patient : records) {
+                    if(filterSearch(answer, patient)) {
+                        System.out.printf("%-13s %-10s %-10s %-11s %-9d %-8s %-15s %-12d %-10d\n",
+                            patient.getUID(), patient.getLastName(), patient.getFirstName(), 
+                            patient.getMiddleName(), patient.getBirthday(), patient.getGender(),
+                            patient.getAddress(), patient.getPhoneNum(), patient.getNationalID()
+                        );
+                    }
+                }
+
+                // User selects Patient that will be selected...
+                System.out.print("\nEnter the patient's UID that you want to display: ");
+                answer = input.nextLine();
+                found = 1;
+
+            }
+            
+            // search result is exactly one patient
+            if(found == 1) 
+            { 
+                for (Patient patient : records) {
+                    if(filterSearch(answer, patient)) {
+                        
+                        return patient;
+
+                    }
+                }
+            } 
+            else // if(found==0) patient is not found, ask user if they want to search again
+            { 
+                System.out.println("No record found.");
+                System.out.print("\nSearch again? [Y/N] ");
+                answer = checkAnswer();
+            }
+            
+        } 
+        while ("Y".equalsIgnoreCase(answer)); 
+        // loops again if user answers "Y"
+
+        // Return Null if User Cancels
+        return null;
 
     }
 

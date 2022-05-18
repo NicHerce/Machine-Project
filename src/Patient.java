@@ -12,6 +12,9 @@ public class Patient {
     private Boolean isDeleted;
     private String reason;
     
+    public Patient() {
+    }
+
     public Patient(String uID, String lastName, String firstName, String middleName, long birthday, String gender,
             String address, String phoneNum, String nationalID, Boolean isDeleted, String reason) {
         UID = uID;

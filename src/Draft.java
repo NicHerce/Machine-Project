@@ -2,49 +2,91 @@
     Medical Laboratory Information System 
 */
 
-import java.io.File;
-import java.io.Writer;
-import java.net.MalformedURLException;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.Scanner;
 
-import com.itextpdf.text.BaseColor;
-import com.itextpdf.text.Document;
-import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.Element;
-import com.itextpdf.text.Image;
-import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.pdf.PdfPCell;
-import com.itextpdf.text.pdf.PdfPTable;
-import com.itextpdf.text.pdf.PdfWriter;
+/*/
+ *  Aian ( 05/16/22 ): Optimized and shortened
+/*/
+import java.io.*;
+import java.time.*;
+import java.util.*;
+import java.net.MalformedURLException;
+import com.itextpdf.text.*;
+import com.itextpdf.text.pdf.*;
 
 public class Draft {
     static Scanner input = new Scanner(System.in);
-    private static ArrayList<Patient> records = new ArrayList<Patient>();
+    private static ArrayList<Patient> patientRecords = new ArrayList<Patient>();
+    private static ArrayList<Service> serviceRecords = new ArrayList<Service>();
 
     public static void main(String[] args) throws Exception {
-        String answer;
+        // String answer;
         
         // Reads Patients.txt file to get records
         readRecord();
 
-        do{
-            mainMenu();
+        addService();
+
+        System.out.println("\nServices:");
+        for (Service service : serviceRecords) {
+            System.out.println(service.getServiceCode() + " " + service.getDescription() + " " + service.getPrice());
+        }
+
+        // do{
+        //     mainMenu();
             
-            // Ask user if they want to make another transaction
-            System.out.print("\nReturn to Main Menu? [Y/N]: ");
-            answer = input.next(); input.nextLine();
-        }while("y".equalsIgnoreCase(answer));
+        //     // Ask user if they want to make another transaction
+        //     System.out.print("\nReturn to Main Menu? [Y/N]: ");
+        //     answer = input.next(); input.nextLine();
+        // }while("y".equalsIgnoreCase(answer));
         
         // Write records to Patients.txt file
         writeRecord();
+    }
+
+    // Add New Service
+    public static void addService() {      
+        String answer;
+        clear();
+
+        try {
+            do {
+                // reset answer at start of loop
+                answer = "N";
+
+                // 3 character code for the service
+                System.out.print("Enter 3 character code: ");
+                String serviceCode = input.nextLine();
+
+                // description of service
+                System.out.print("Enter description: ");
+                String description = input.nextLine();
+
+                // price of service
+                System.out.print("Enter price: ");
+                float price = input.nextFloat();
+
+                // create Service object and store it in serviceRecords ArrayList
+                serviceRecords.add(new Service(serviceCode, description, price, false, ""));
+
+                System.out.println(serviceCode + " " + description + " has been added.\n");
+
+                // ask if user wants to add another service
+                System.out.print("Do you want to add another service? [Y/N]: ");
+                answer = checkAnswer();
+
+            } while ("Y".equalsIgnoreCase(answer));            
+
+        } catch (Exception e) {
+            System.out.println("Error occured.");
+            e.printStackTrace();
+        }
+        
+    } 
+
+    // TODO Search Service Record:
+    public static void searchService() throws MalformedURLException, IOException, DocumentException {
+        clear();
+
     }
 
     // Reads Patients.txt file to get records
@@ -90,7 +132,7 @@ public class Draft {
                 }
 
                 // add new Patient object to records ArrayList
-                records.add(new Patient(uID, lastName, firstName, middleName, birthday, gender, address, phoneNum, nID, deleted, reason));
+                patientRecords.add(new Patient(uID, lastName, firstName, middleName, birthday, gender, address, phoneNum, nID, deleted, reason));
             }
 
             System.out.println("\n");
@@ -102,13 +144,14 @@ public class Draft {
         
     }
     
-    // Write records to Patients.txt file
+    // Write records to Patients.txt and Services.txt file
     public static void writeRecord() {
         
+        // write Patients.txt file
         try {
             Writer writer = new BufferedWriter(new FileWriter("Patients.txt", false));
             
-            for (Patient patient : records) {
+            for (Patient patient : patientRecords) {
                 // patient is not deleted
                 if (patient.getIsDeleted() == false) {
                     writer.write(
@@ -141,7 +184,39 @@ public class Draft {
             }
 
             writer.close();
-            System.out.println("Successfully wrote to the file\n");
+            System.out.println("Successfully wrote to Patients file\n");
+            
+        } catch(IOException e) {
+            System.out.println("An error occured.");
+            e.printStackTrace();
+        }
+
+        // write Services.txt file
+        try {
+            Writer writer = new BufferedWriter(new FileWriter("Services.txt", false));
+            
+            for (Service service : serviceRecords) {
+                // service is not deleted
+                if (service.getIsDeleted() == false) {
+                    writer.write(
+                        service.getServiceCode() + ";" +
+                        service.getDescription() + ";" +
+                        service.getPrice() + ";\n"
+                    );
+                    
+                } else { // service is deleted
+                    writer.write(
+                        service.getServiceCode() + ";" +
+                        service.getDescription() + ";" +
+                        service.getPrice() + ";D;" +
+                        service.getReason() + ";\n"
+                    );
+                }
+                
+            }
+
+            writer.close();
+            System.out.println("Successfully wrote to Services file\n");
             
         } catch(IOException e) {
             System.out.println("An error occured.");
@@ -151,6 +226,9 @@ public class Draft {
 
     // Main Menu of the Medical Laboratory Information System 
     public static void mainMenu() throws MalformedURLException, IOException, DocumentException {
+        
+        clear();
+
         int answer;
 
         // Main Menu        
@@ -167,18 +245,20 @@ public class Draft {
 
         // Executes based on the answer of the user:
         switch(answer) {
-            case 1: manageRecord(); break;
-            case 2: System.out.println("Manage Services"); break;
+            case 1: managePatientRecord(); break;
+            case 2: manageServiceRecord(); break;
             case 3: System.out.println("Manage Laboratory Results"); break;
         }
     }
 
     // Manage Patient Records
-    public static void manageRecord() throws MalformedURLException, IOException, DocumentException {
+    public static void managePatientRecord() throws MalformedURLException, IOException, DocumentException {
+        clear();
+        
         int answer;
 
         System.out.print (
-            "\nManage Petient Records\n" +
+            "Manage Petient Records\n" +
             "[1] Add New Patient\n" +
             "[2] Edit Patient Record\n" +
             "[3] Delete Patient Record\n" +
@@ -195,6 +275,30 @@ public class Draft {
             case 2: editPatient(); break;
             case 3: deletePatient(); break;
             case 4: searchPatient(); break;
+        }
+    }
+
+    // Manage Service Records
+    public static void manageServiceRecord() throws MalformedURLException, IOException, DocumentException {
+        clear();
+        
+        int answer;
+
+        System.out.print (
+            "Manage Service Records\n" +
+            "[1] Add New Service\n" +
+            "[2] Edit Service Record\n" +
+            "[3] Delete Service Record\n" +
+            "[4] Search Service Record\n" +
+            "[0] Return to Main Menu\n\n" +
+            "Select a transaction: "
+        );
+
+        answer = checkInput(0, 4);
+
+        switch(answer) {
+            case 0: mainMenu(); break;
+            case 1: addService(); break;
         }
     }
 
@@ -354,8 +458,10 @@ public class Draft {
 
     // Add New Patient
     public static void addPatient() {
+        clear();
+
         String answer;
-        int patient_num = records.size() - 1;
+        int patient_num = patientRecords.size() - 1;
         String uID;
         int day = Calendar.getInstance().get(Calendar.DATE);
 
@@ -395,10 +501,12 @@ public class Draft {
         answer = checkAnswer();
         
         if(answer.equalsIgnoreCase("y")) {
-            records.add(new Patient(uID, pLastName, pFirstName, pMiddleName, pBirthday, pGender, pAddress, pPhoneNum, pNationalID, false, ""));
+            patientRecords.add(new Patient(uID, pLastName, pFirstName, pMiddleName, pBirthday, pGender, pAddress, pPhoneNum, pNationalID, false, ""));
         }
         
         // Display all records
+        // Aian (05/17/22): Feels like this will be more cluttered once we have more entries, I suggest removing it
+        /*
         System.out.println("\nPatient Records: ");
         for(Patient patient : records) {
             System.out.println (
@@ -413,12 +521,25 @@ public class Draft {
                 patient.getNationalID() + ";"
             );
         }
+        */
 
-        System.out.println("Successfully added patient");
+        // Aian (05/17/22): Replaced the thing above with this.
+        System.out.println(uID + ";" + pLastName + ";" + pFirstName + ";" + pMiddleName + ";" + String.valueOf(pBirthday) + ";" + pGender + ";" + pAddress + ";" + String.valueOf(pPhoneNum) + ";" + String.valueOf(pNationalID) + ";");
+
+        // Aian (05/17/22): 
+        if ( answer.equalsIgnoreCase("y") ) {
+            System.out.print("Successfully added patient");
+            loading(3);
+        } else {
+            System.out.print("Patient not added");
+            loading(3);
+        }
     }
 
     // Edit Patient
     public static void editPatient() {
+        clear();
+        
         String answer; // user's input to [Y/N] prompt
         String info;   // info of patient   
         int found;     // counter for number of results
@@ -433,7 +554,7 @@ public class Draft {
             info = input.nextLine();
 
             // loops through the records to look for patient
-            for (Patient patient : records) {
+            for (Patient patient : patientRecords) {
                 if (filterSearch(info, patient)) found++; // counts number of patient's with the same data as input     
             }
 
@@ -446,7 +567,7 @@ public class Draft {
                 );
 
                 // display list of multiple patients
-                for (Patient patient : records) {
+                for (Patient patient : patientRecords) {
                     if(filterSearch(info, patient)) {
                         System.out.printf("%-13s %-10s %-10s %-11s %-9d %-8s %-15s %-12d %-10d\n",
                             patient.getUID(), patient.getLastName(), patient.getFirstName(), 
@@ -463,9 +584,10 @@ public class Draft {
 
             } 
             
-            if (found == 1) { // show search result when exactly one patient is found
+            // show search result when exactly one patient is found
+            if (found == 1) { 
 
-                for (Patient patient : records) {
+                for (Patient patient : patientRecords) {
                     if (filterSearch(info, patient)) {
                         // display patient record to be edited
                         System.out.println(
@@ -511,6 +633,8 @@ public class Draft {
 
     // Delete Patient
     public static void deletePatient() {
+        clear();
+        
         String answer; // user's input to [Y/N] prompt
         String info;   // info of patient   
         int found;     // counter for number of results
@@ -525,7 +649,7 @@ public class Draft {
             info = input.nextLine();
 
             // loops through the records to look for patient
-            for (Patient patient : records) {
+            for (Patient patient : patientRecords) {
                 if (filterSearch(info, patient)) found++; // counts number of patient's with the same data as input     
             }
 
@@ -538,7 +662,7 @@ public class Draft {
                 );
 
                 // display list of multiple patients
-                for (Patient patient : records) {
+                for (Patient patient : patientRecords) {
                     if(filterSearch(info, patient)) {
                         System.out.printf("%-13s %-10s %-10s %-11s %-9d %-8s %-15s %-12d %-10d\n",
                             patient.getUID(), patient.getLastName(), patient.getFirstName(), 
@@ -555,9 +679,10 @@ public class Draft {
 
             } 
             
-            if (found == 1) { // show search result when exactly one patient is found
+            // show search result when exactly one patient is found
+            if (found == 1) { 
 
-                for (Patient patient : records) {
+                for (Patient patient : patientRecords) {
                     if (filterSearch(info, patient)) {
                         // display patient record to be deleted
                         System.out.println(
@@ -608,6 +733,8 @@ public class Draft {
 
     // Search Patient Record:
     public static void searchPatient() throws MalformedURLException, IOException, DocumentException {
+        clear();
+        
         String answer; // user's input to prompt
         int found = 0; // counter for number of results
 
@@ -620,7 +747,7 @@ public class Draft {
             answer = input.nextLine();
     
             // loops through the records to look for patient
-            for (Patient patient : records) {
+            for (Patient patient : patientRecords) {
                 // counts number of patient's with the same data as input 
                 if(filterSearch(answer, patient)) found++;     
             }
@@ -633,7 +760,7 @@ public class Draft {
                 );
 
                 // display list of multiple patients
-                for (Patient patient : records) {
+                for (Patient patient : patientRecords) {
                     if(filterSearch(answer, patient)) {
                         System.out.printf("%-13s %-10s %-10s %-11s %-9d %-8s %-15s %-12d %-10d\n",
                             patient.getUID(), patient.getLastName(), patient.getFirstName(), 
@@ -650,7 +777,7 @@ public class Draft {
 
             // search result is exactly one patient
             if(found == 1) { 
-                for (Patient patient : records) {
+                for (Patient patient : patientRecords) {
                     if(filterSearch(answer, patient)) {
                         System.out.println(
                             patient.getUID() + "\n" +
@@ -683,17 +810,17 @@ public class Draft {
         } while ("Y".equalsIgnoreCase(answer)); // loops again if user answers "Y"
 
     }
-    
-    // Creates UID for the patient
+
+    /*/
+     *  Creates UID for the patient
+     *  Aian ( 05/16/22 ): Optimized the code
+    /*/
     public static String generateUID(int patient_num) {
         String retval;
-        int year = Calendar.getInstance().get(Calendar.YEAR);
-        int month = Calendar.getInstance().get(Calendar.MONTH);
-        String letters = null;
 
-        letters = formatValue(patient_num);
+        LocalDate date = LocalDate.now();
         
-        retval = String.format("P%d%02d%s", year, month, letters);
+        retval = String.format("P%04d%02d%s", date.getYear(), date.getMonthValue(), formatValue(patient_num));
         
         return retval;
     }
@@ -715,6 +842,9 @@ public class Draft {
         return ret_val.toString();
     }
     
+    /*/
+     *  Aian ( 05/16/22 ): Unused function?
+    /*/
     public static void wordLength() {
         Scanner input = new Scanner(System.in);
 
@@ -726,6 +856,36 @@ public class Draft {
         input.close();
     }
 
+    /*/
+     * Call clear() to clear current terminal screen
+     * Aian (05/17/22): Added this.
+    /*/
+    public static void clear()
+    {
+        System.out.print("\033[H\033[2J");
+        System.out.flush();
+    }
+
+    /*/
+     *  Visual Loading System
+     *  Creates ellipses per each 500 milisecond "tick" 
+     *  Always ends with a new line
+     *  Aian (05/17/22): Added this.
+    /*/
+    public static void loading( int ticks )
+    {
+        for ( int i = 0; i < ticks; i++ )
+        {
+            try {
+                Thread.sleep(500);
+            } catch (Exception e) {
+                System.out.println("An error occurred.");
+                e.printStackTrace();
+            }
+            System.out.print(".");
+            
+        }
+        System.out.println("");
+    }
+
 }
-
-

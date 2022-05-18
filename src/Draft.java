@@ -19,25 +19,19 @@ public class Draft {
     private static ArrayList<Service> serviceRecords = new ArrayList<Service>();
 
     public static void main(String[] args) throws Exception {
-        // String answer;
+        String answer;
         
         // Reads Patients.txt file to get records
         readRecord();
+        System.out.println("successfully read files");
 
-        addService();
-
-        System.out.println("\nServices:");
-        for (Service service : serviceRecords) {
-            System.out.println(service.getServiceCode() + " " + service.getDescription() + " " + service.getPrice());
-        }
-
-        // do{
-        //     mainMenu();
+        do{
+            mainMenu();
             
-        //     // Ask user if they want to make another transaction
-        //     System.out.print("\nReturn to Main Menu? [Y/N]: ");
-        //     answer = input.next(); input.nextLine();
-        // }while("y".equalsIgnoreCase(answer));
+            // Ask user if they want to make another transaction
+            System.out.print("\nReturn to Main Menu? [Y/N]: ");
+            answer = input.next(); input.nextLine();
+        }while("y".equalsIgnoreCase(answer));
         
         // Write records to Patients.txt file
         writeRecord();
@@ -83,16 +77,56 @@ public class Draft {
         
     } 
 
-    // TODO Search Service Record:
+    // Search Service Record:
     public static void searchService() throws MalformedURLException, IOException, DocumentException {
-        clear();
+        // clear();
+        
+        String answer; // user's input to prompt
+        String info;   // info of services
+        int found;
+
+        do{
+            // reset variable at start of loop
+            answer = "N";
+            found = 0;
+
+            // input for searching patient in the records
+            System.out.print("\nEnter Service Information: ");
+            info = input.nextLine();
+    
+            // sorts serviceRecords ArrayList alphabetically based on serviceCode
+            Collections.sort(serviceRecords, Comparator.comparing(Service::getServiceCode));
+
+            for (Service service : serviceRecords) {
+                if (info.equalsIgnoreCase(service.getServiceCode()) || service.getDescription().contains(info)) {
+                    
+                    if(found == 0) {
+                        // header
+                        System.out.printf("%-12s %-30s %s\n", "Service Code", "Description", "Price");
+                    }
+                    
+                    // list
+                    System.out.printf("%-12s %-30s %.2f\n", service.getServiceCode(), service.getDescription(), service.getPrice());
+
+                    found++;
+                }
+
+            }
+
+            if (found == 0) { // search unsuccessful
+                System.out.println("No record found.");
+                System.out.print("\nSearch again? [Y/N] ");
+                answer = checkAnswer();
+            }
+
+        } while ("Y".equalsIgnoreCase(answer));
 
     }
 
     // Reads Patients.txt file to get records
     public static void readRecord() {
-        System.out.println("readRecord function:");
         
+        // reads Patients.txt file
         try {
             Scanner scanner = new Scanner(new File("Patients.txt"));
             String line = "";    // stores a line in the records
@@ -120,28 +154,66 @@ public class Draft {
                     if ("D".equals(parts[9])) deleted = true;
                     reason = parts[10];
 
-                    System.out.printf("%s;%s;%s;%s;%d;%s;%s;%d;%d;%s;%s;\n", 
+                    System.out.printf("%s;%s;%s;%s;%d;%s;%s;%s;%s;%s;%s;\n", 
                         uID, lastName, firstName, middleName, birthday, gender, address, phoneNum, nID, parts[9], reason
                     );
 
                 } else {
                     // check record
-                    System.out.printf("%s;%s;%s;%s;%d;%s;%s;%d;%d;\n", 
+                    System.out.printf("%s;%s;%s;%s;%d;%s;%s;%s;%s;\n", 
                         uID, lastName, firstName, middleName, birthday, gender, address, phoneNum, nID  
                     );
                 }
 
-                // add new Patient object to records ArrayList
+                // add new Patient object to patientRecords ArrayList
                 patientRecords.add(new Patient(uID, lastName, firstName, middleName, birthday, gender, address, phoneNum, nID, deleted, reason));
             }
-
-            System.out.println("\n");
 
         } catch (FileNotFoundException e) {
             System.out.println("An error occured");
             e.printStackTrace();
         }
+
+        System.out.println("");
         
+        // reads Services.txt file
+        try {
+            Scanner scanner = new Scanner(new File("Services.txt"));
+            String line = "";    // stores a line in the records
+            String parts[] = {}; // array of String to store the parts of the line
+
+            while(scanner.hasNextLine()) {
+                line = scanner.nextLine();      // stores a line from Patients.txt file
+                parts = line.split(";"); // separates the line into parts
+
+                // assigns the portions of the String for the parameters of Patient object
+                String serviceCode = parts[0];
+                String description = parts[1];
+                float price = Float.parseFloat(parts[2]);
+                Boolean deleted = false; // parts[3]
+                String reason = "";      // parts[4]
+
+                // // if patient is deleted, update the variables
+                if (parts.length > 3) {
+                    if ("D".equals(parts[3])) deleted = true;
+                    reason = parts[4];
+
+                    System.out.printf("%s;%s;%.f;D;%s;\n", serviceCode, description, price, reason);
+
+                } else {
+                    // check record
+                    System.out.printf("%s;%s;%.2f;\n", serviceCode, description, price);
+                }
+
+                // add new Service object to serviceRecords ArrayList
+                serviceRecords.add(new Service(serviceCode, description, price, deleted, reason));
+            }
+
+        } catch (FileNotFoundException e) {
+            System.out.println("An error occured");
+            e.printStackTrace();
+        }
+
     }
     
     // Write records to Patients.txt and Services.txt file
@@ -184,7 +256,7 @@ public class Draft {
             }
 
             writer.close();
-            System.out.println("Successfully wrote to Patients file\n");
+            System.out.println("\nSuccessfully wrote to Patients file");
             
         } catch(IOException e) {
             System.out.println("An error occured.");
@@ -222,6 +294,7 @@ public class Draft {
             System.out.println("An error occured.");
             e.printStackTrace();
         }
+
     }
 
     // Main Menu of the Medical Laboratory Information System 
@@ -299,6 +372,7 @@ public class Draft {
         switch(answer) {
             case 0: mainMenu(); break;
             case 1: addService(); break;
+            case 4: searchService(); break;
         }
     }
 
@@ -321,6 +395,7 @@ public class Draft {
         String answer;
 
         do{
+            // answer = input.next(); input.nextLine();
             answer = input.next(); input.nextLine();
             if(!"Y".equalsIgnoreCase(answer) && !"N".equalsIgnoreCase(answer))
                 System.out.println("Invalid input.");
@@ -739,6 +814,7 @@ public class Draft {
         int found = 0; // counter for number of results
 
         do{
+            // reset variables at start of loop
             answer = "N";
             found = 0;
 
@@ -748,11 +824,11 @@ public class Draft {
     
             // loops through the records to look for patient
             for (Patient patient : patientRecords) {
-                // counts number of patient's with the same data as input 
+                // counts number of patients with the same data as input 
                 if(filterSearch(answer, patient)) found++;     
             }
 
-            // outputs row if there is no header and if there are patient's with same data
+            // outputs row if there is no header and if there are patients with same data
             if(found > 1) {
                 System.out.printf("%-13s %-10s %-10s %-11s %-9s %-8s %-15s %-12s %-10s\n",
                     "Patient's UID", "Last Name", "First Name", "Middle Name",

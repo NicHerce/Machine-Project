@@ -79,11 +79,11 @@ public class Draft {
 
     // Search Service Record:
     public static void searchService() throws MalformedURLException, IOException, DocumentException {
-        // clear();
+        clear();
         
         String answer; // user's input to prompt
         String info;   // info of services
-        int found;
+        int found;     // counts successful search
 
         do{
             // reset variable at start of loop

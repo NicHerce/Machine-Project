@@ -8,14 +8,17 @@
 /*/
 import java.io.*;
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.net.MalformedURLException;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
 
 public class App {
+
     static Scanner input = new Scanner(System.in);
     private static ArrayList<Patient> records = new ArrayList<Patient>();
+    private static ArrayList<LabResults> requests = new ArrayList<LabResults>();
 
     public static void main(String[] args) throws Exception {
         String answer;
@@ -34,6 +37,11 @@ public class App {
         // Write records to Patients.txt file
         writeRecord();
     }
+
+/********************************************************************************************************************************************/
+    /*/
+     *  Utilities
+    /*/
 
     // Reads Patients.txt file to get records
     public static void readRecord() {
@@ -164,32 +172,6 @@ public class App {
         }
     }
 
-    // Manage Patient Records
-    public static void manageRecord() throws MalformedURLException, IOException, DocumentException {
-        clear();
-        
-        int answer;
-
-        System.out.print (
-            "Manage Petient Records\n" +
-            "[1] Add New Patient\n" +
-            "[2] Edit Patient Record\n" +
-            "[3] Delete Patient Record\n" +
-            "[4] Search Patient Record\n" +
-            "[0] Return to Main Menu\n\n" +
-            "Select a transaction: "
-        );
-
-        answer = checkInput(0, 4);
-
-        switch(answer) {
-            case 0: mainMenu(); break;
-            case 1: addPatient(); break;
-            case 2: editPatient(); break;
-            case 3: deletePatient(); break;
-            case 4: searchPatient(); break;
-        }
-    }
 
     // Checks whether the user's input is within the choices:
     public static int checkInput(int limit1, int limit2) {
@@ -345,6 +327,70 @@ public class App {
         }
     }
 
+    /*/
+     * Call clear() to clear current terminal screen
+     * Aian (05/17/22): Added this.
+    /*/
+    public static void clear()
+    {
+        System.out.print("\033[H\033[2J");
+        System.out.flush();
+    }
+
+    /*/
+     *  Visual Loading System
+     *  Creates ellipses per each 500 milisecond "tick" 
+     *  Always ends with a new line
+     *  Aian (05/17/22): Added this.
+    /*/
+    public static void loading( int ticks )
+    {
+        for ( int i = 0; i < ticks; i++ )
+        {
+            try {
+                Thread.sleep(500);
+            } catch (Exception e) {
+                System.out.println("An error occurred.");
+                e.printStackTrace();
+            }
+            System.out.print(".");
+            
+        }
+        System.out.println("");
+    }
+
+/********************************************************************************************************************************************/
+    /*/
+     *  Patient System
+    /*/
+
+    // Manage Patient Records
+    public static void manageRecord() throws MalformedURLException, IOException, DocumentException {
+        clear();
+        
+        int answer;
+
+        System.out.print (
+            "Manage Patient Records\n" +
+            "[1] Add New Patient\n" +
+            "[2] Edit Patient Record\n" +
+            "[3] Delete Patient Record\n" +
+            "[4] Search Patient Record\n" +
+            "[0] Return to Main Menu\n\n" +
+            "Select a transaction: "
+        );
+
+        answer = checkInput(0, 4);
+
+        switch(answer) {
+            case 0: mainMenu(); break;
+            case 1: addPatient(); break;
+            case 2: editPatient(); break;
+            case 3: deletePatient(); break;
+            case 4: searchPatient(); break;
+        }
+    }
+
     // Add New Patient
     public static void addPatient() {
         clear();
@@ -359,7 +405,7 @@ public class App {
         if(day == 1) patient_num = 0;
         else patient_num++;
         
-        uID = generateUID(patient_num); // Create UID for New Patient
+        uID = generatepUID(patient_num); // Create UID for New Patient
 
         System.out.print("Last Name: ");
         String pLastName = input.nextLine();
@@ -707,8 +753,9 @@ public class App {
     /*/
      *  Creates UID for the patient
      *  Aian ( 05/16/22 ): Optimized the code
+     *  Aian ( 05/17/22 ): Made a unique function name (pUID)
     /*/
-    public static String generateUID(int patient_num) {
+    public static String generatepUID(int patient_num) {
         String retval;
 
         LocalDate date = LocalDate.now();
@@ -749,36 +796,182 @@ public class App {
         input.close();
     }
 
-    /*/
-     * Call clear() to clear current terminal screen
-     * Aian (05/17/22): Added this.
-    /*/
-    public static void clear()
-    {
-        System.out.print("\033[H\033[2J");
-        System.out.flush();
-    }
+/********************************************************************************************************************************************/
 
     /*/
-     *  Visual Loading System
-     *  Creates ellipses per each 500 milisecond "tick" 
-     *  Always ends with a new line
-     *  Aian (05/17/22): Added this.
+     *  Lab Results System
     /*/
-    public static void loading( int ticks )
-    {
-        for ( int i = 0; i < ticks; i++ )
-        {
-            try {
-                Thread.sleep(500);
-            } catch (Exception e) {
-                System.out.println("An error occurred.");
-                e.printStackTrace();
-            }
-            System.out.print(".");
-            
+
+    // Manage Patient Records
+    public static void manageRequests() throws MalformedURLException, IOException, DocumentException {
+        clear();
+        
+        int answer;
+
+        System.out.print (
+            "Manage Laboratory Requests\n" +
+            "[1] Add New Request\n" +
+            "[2] Search Request\n" +
+            "[3] Edit Request\n" +
+            "[0] Return to Main Menu\n\n" +
+            "Select a transaction: "
+        );
+
+        answer = checkInput(0, 4);
+
+        switch(answer) {
+            case 0: mainMenu(); break;
+            case 1: 
+            //addRequest(); 
+            break;
+            case 2: 
+            //editRequest(); 
+            break;
+            case 3: 
+            //deleteRequest(); 
+            break;
         }
+    }
+
+    // TODO: implement Services UID system into Lab Results
+
+    public static void addRequest()
+    {
+
+        clear();
+
+        LabResults lbr = new LabResults();
+
+        String answer;
+        int requests_num = requests.size() - 1;
+        String sUID;
+        String rUID;
+        Patient patient = new Patient();
+
+        int day = LocalDate.now().getDayOfMonth();
+
         System.out.println("");
+
+        // If it is the first day of the month, reset patient_num to 0 (AA00)
+        // Else, increase the patient_num
+        if(day == 1) requests_num = 0;
+        else requests_num++;
+
+        sUID = "CRP"; // TODO: User Selects service
+
+        rUID = sUID + LocalDate.now().format( DateTimeFormatter.ofPattern("YYYYMMdd") ) + "AA00"; // TODO: Place Holder Clear when rUID system has been set
+
+        System.out.println("Enter Information for Request:");
+
+        // Select Patient Prompt for request
+        patient = returnPatient();
+
+        // If User stops searching go back to menu
+        if ( patient == null )
+        {
+            return;
+        }
+        else
+        {
+
+            // Setup lbr
+
+            // rUID
+            lbr.setrUID(rUID);
+
+            // SetUP UID of Patient
+            lbr.setpUID(patient.getUID());
+
+            // Asks for Result
+            System.out.println("Enter Service Results:");
+            lbr.setResults(input.nextLine());
+
+            // Time Setup is here for more accuracy
+            lbr.reqDate = LocalDate.now().format( DateTimeFormatter.ofPattern("YYYYMMdd") );
+            lbr.reqTime = LocalTime.now().format( DateTimeFormatter.ofPattern("hhmm") );
+
+            //System.out.printf("%-15s;%-12s;", );
+
+        }
+
+    }
+
+    // Reusable Patient Search Engine
+    // Returns Patient data type when patient with matching parameters are found
+    // Its a loop until user stops
+    public static Patient returnPatient() {
+        
+        clear();
+
+        String answer; // user's input to prompt
+        int found = 0; // counter for number of results
+
+        do{
+
+            answer = "N";
+            found = 0;
+
+            // input for searching patient in the records
+            System.out.print("\nEnter Patient Information: ");
+            answer = input.nextLine();
+    
+            // loops through the records to look for patient
+            for (Patient patient : records) {
+                // counts number of patient's with the same data as input 
+                if(filterSearch(answer, patient)) found++;     
+            }
+
+            // Outputs row per row if there is no header and if there are patient's with same data
+            if(found > 1) {
+
+                System.out.printf("%-13s %-10s %-10s %-11s %-9s %-8s %-15s %-12s %-10s\n",
+                    "Patient's UID", "Last Name", "First Name", "Middle Name",
+                    "Birthday", "Gender", "Address", "Phone Number", "National ID no."
+                );
+
+                // Print all Matching Patients
+                for (Patient patient : records) {
+                    if(filterSearch(answer, patient)) {
+                        System.out.printf("%-13s %-10s %-10s %-11s %-9d %-8s %-15s %-12d %-10d\n",
+                            patient.getUID(), patient.getLastName(), patient.getFirstName(), 
+                            patient.getMiddleName(), patient.getBirthday(), patient.getGender(),
+                            patient.getAddress(), patient.getPhoneNum(), patient.getNationalID()
+                        );
+                    }
+                }
+
+                // User selects Patient that will be selected...
+                System.out.print("\nEnter the patient's UID that you want to display: ");
+                answer = input.nextLine();
+                found = 1;
+
+            }
+            
+            // search result is exactly one patient
+            if(found == 1) 
+            { 
+                for (Patient patient : records) {
+                    if(filterSearch(answer, patient)) {
+                        
+                        return patient;
+
+                    }
+                }
+            } 
+            else // if(found==0) patient is not found, ask user if they want to search again
+            { 
+                System.out.println("No record found.");
+                System.out.print("\nSearch again? [Y/N] ");
+                answer = checkAnswer();
+            }
+            
+        } 
+        while ("Y".equalsIgnoreCase(answer)); 
+        // loops again if user answers "Y"
+
+        // Return Null if User Cancels
+        return null;
+
     }
 
 }

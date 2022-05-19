@@ -1,11 +1,11 @@
 public class Service {
     private String serviceCode;
     private String description;
-    private float price;
+    private double price;
     private Boolean isDeleted;
     private String reason;
     
-    public Service(String serviceCode, String description, float price, Boolean isDeleted, String reason) {
+    public Service(String serviceCode, String description, double price, Boolean isDeleted, String reason) {
         this.serviceCode = serviceCode;
         this.description = description;
         this.price = price;
@@ -29,11 +29,11 @@ public class Service {
         this.description = description;
     }
 
-    public float getPrice() {
+    public double getPrice() {
         return price;
     }
 
-    public void setPrice(float price) {
+    public void setPrice(double price) {
         this.price = price;
     }
 

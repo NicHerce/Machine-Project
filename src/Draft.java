@@ -189,7 +189,7 @@ public class Draft {
                 // assigns the portions of the String for the parameters of Patient object
                 String serviceCode = parts[0];
                 String description = parts[1];
-                float price = Float.parseFloat(parts[2]);
+                double price = Double.parseDouble(parts[2]);
                 Boolean deleted = false; // parts[3]
                 String reason = "";      // parts[4]
 

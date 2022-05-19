@@ -19,6 +19,7 @@ public class App {
     static Scanner input = new Scanner(System.in);
     private static ArrayList<Patient> records = new ArrayList<Patient>();
     private static ArrayList<LabResults> requests = new ArrayList<LabResults>();
+    private static ArrayList<Service> services = new ArrayList<Service>();
 
     public static void main(String[] args) throws Exception {
         String answer;
@@ -39,6 +40,7 @@ public class App {
     }
 
 /********************************************************************************************************************************************/
+    
     /*/
      *  Utilities
     /*/
@@ -360,6 +362,7 @@ public class App {
     }
 
 /********************************************************************************************************************************************/
+    
     /*/
      *  Patient System
     /*/
@@ -794,6 +797,122 @@ public class App {
         System.out.println(word.length());
     
         input.close();
+    }
+
+/********************************************************************************************************************************************/
+
+    /*/
+     *  Service System
+    /*/
+
+    // Manage Service Records
+    public static void manageServiceRecord() throws MalformedURLException, IOException, DocumentException {
+        clear();
+        
+        int answer;
+
+        System.out.print (
+            "Manage Service Records\n" +
+            "[1] Add New Service\n" +
+            "[2] Edit Service Record\n" +
+            "[3] Delete Service Record\n" +
+            "[4] Search Service Record\n" +
+            "[0] Return to Main Menu\n\n" +
+            "Select a transaction: "
+        );
+
+        answer = checkInput(0, 4);
+
+        switch(answer) {
+            case 0: mainMenu(); break;
+            case 1: addService(); break;
+            case 4: searchService(); break;
+        }
+    }
+
+    public static void addService() {      
+        String answer;
+        clear();
+
+        try {
+            do {
+                // reset answer at start of loop
+                answer = "N";
+
+                // 3 character code for the service
+                System.out.print("Enter 3 character code: ");
+                String serviceCode = input.nextLine();
+
+                // description of service
+                System.out.print("Enter description: ");
+                String description = input.nextLine();
+
+                // price of service
+                System.out.print("Enter price: ");
+                float price = input.nextFloat();
+
+                // create Service object and store it in serviceRecords ArrayList
+                services.add(new Service(serviceCode, description, price, false, ""));
+
+                System.out.println(serviceCode + " " + description + " has been added.\n");
+
+                // ask if user wants to add another service
+                System.out.print("Do you want to add another service? [Y/N]: ");
+                answer = checkAnswer();
+
+            } while ("Y".equalsIgnoreCase(answer));            
+
+        } catch (Exception e) {
+            System.out.println("Error occured.");
+            e.printStackTrace();
+        }
+        
+    }
+
+    // Search Service Record:
+    public static void searchService() throws MalformedURLException, IOException, DocumentException {
+        clear();
+        
+        String answer; // user's input to prompt
+        String info;   // info of services
+        int found;     // counts successful search
+
+        do{
+            // reset variable at start of loop
+            answer = "N";
+            found = 0;
+
+            // input for searching patient in the records
+            System.out.print("\nEnter Service Information: ");
+            info = input.nextLine();
+    
+            // sorts serviceRecords ArrayList alphabetically based on serviceCode
+            Collections.sort(services, Comparator.comparing(Service::getServiceCode));
+
+            for (Service service : services) {
+                if (info.equalsIgnoreCase(service.getServiceCode()) || service.getDescription().contains(info)) {
+                    
+                    if(found == 0) {
+                        // header
+                        System.out.printf("%-12s %-30s %s\n", "Service Code", "Description", "Price");
+                    }
+                    
+                    // list
+                    System.out.printf("%-12s %-30s %.2f\n", service.getServiceCode(), service.getDescription(), service.getPrice());
+
+                    found++;
+                }
+
+            }
+
+            if (found == 0) { // search unsuccessful
+                System.out.println("No record found.");
+                System.out.print("\nSearch again? [Y/N] ");
+                answer = checkAnswer();
+            }
+
+        } while ("Y".equalsIgnoreCase(answer));
+
     }
 
 /********************************************************************************************************************************************/

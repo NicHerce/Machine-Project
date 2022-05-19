@@ -27,7 +27,9 @@ public class App {
         readRecord();
 
         do{
-            mainMenu();
+
+            //mainMenu();
+            manageRequests();
             
             // Ask user if they want to make another transaction
             System.out.print("\nReturn to Main Menu? [Y/N]: ");
@@ -101,6 +103,7 @@ public class App {
     // Write records to Patients.txt file
     public static void writeRecord() {
         
+        // Patient Writer
         try {
             Writer writer = new BufferedWriter(new FileWriter("Patients.txt", false));
             
@@ -168,7 +171,7 @@ public class App {
         switch(answer) {
             case 1: manageRecord(); break;
             case 2: System.out.println("Manage Services"); break;
-            case 3: System.out.println("Manage Laboratory Results"); break;
+            case 3: manageRequests(); break;
         }
     }
 
@@ -359,6 +362,27 @@ public class App {
         System.out.println("");
     }
 
+    /*/
+     *  Formats Number to a Alpha Numeric Numbering System 
+     *  Aian ( 05/18/22 ): Moved it and made this reusable
+    /*/
+    public static String formatValue(int input, int digits, int letters) {
+        var ret_val = new StringBuilder();
+
+        for ( int i = 0; i < digits; i++ )
+        {
+            ret_val.insert(0, input % 10);
+            input /= 10;
+        }
+        for ( int i = 0; i < letters; i++ )
+        {
+            ret_val.insert(0, (char)('A' + (input % 26)));
+            input /= 26;
+        }
+
+        return ret_val.toString();
+    }
+
 /********************************************************************************************************************************************/
     /*/
      *  Patient System
@@ -439,25 +463,6 @@ public class App {
         {
             records.add(new Patient(uID, pLastName, pFirstName, pMiddleName, pBirthday, pGender, pAddress, pPhoneNum, pNationalID, false, ""));
         }
-        
-        // Display all records
-        // Aian (05/17/22): Feels like this will be more cluttered once we have more entries, I suggest removing it
-        /*
-        System.out.println("\nPatient Records: ");
-        for(Patient patient : records) {
-            System.out.println (
-                patient.getUID() + ";" +
-                patient.getLastName() + ";" +
-                patient.getFirstName() + ";" +
-                patient.getMiddleName() + ";" +
-                patient.getBirthday() + ";" +
-                patient.getGender() + ";" +
-                patient.getAddress() + ";" +
-                patient.getPhoneNum() + ";" +
-                patient.getNationalID() + ";"
-            );
-        }
-        */
 
         // Aian (05/17/22): Replaced the thing above with this.
         System.out.println(uID + ";" + pLastName + ";" + pFirstName + ";" + pMiddleName + ";" + String.valueOf(pBirthday) + ";" + pGender + ";" + pAddress + ";" + String.valueOf(pPhoneNum) + ";" + String.valueOf(pNationalID) + ";");
@@ -760,26 +765,9 @@ public class App {
 
         LocalDate date = LocalDate.now();
         
-        retval = String.format("P%04d%02d%s", date.getYear(), date.getMonthValue(), formatValue(patient_num));
+        retval = String.format("P%04d%02d%s", date.getYear(), date.getMonthValue(), formatValue(patient_num, 2, 3));
         
         return retval;
-    }
-
-    // Formats patient number
-    public static String formatValue(int i) {
-        var ret_val = new StringBuilder();
-
-        ret_val.insert(0, i % 10);
-        i /= 10;
-        ret_val.insert(0, i % 10);
-        i /= 10;
-        ret_val.insert(0, (char)('A' + (i % 26)));
-        i /= 26;
-        ret_val.insert(0, (char)('A' + (i % 26)));
-        i /= 26;
-        ret_val.insert(0, (char)('A' + (i % 26)));
-
-        return ret_val.toString();
     }
     
     /*/
@@ -795,6 +783,13 @@ public class App {
     
         input.close();
     }
+
+/********************************************************************************************************************************************/
+
+    /*/
+     *  Service System
+    /*/
+
 
 /********************************************************************************************************************************************/
 
@@ -822,7 +817,7 @@ public class App {
         switch(answer) {
             case 0: mainMenu(); break;
             case 1: 
-            //addRequest(); 
+            addRequest(); 
             break;
             case 2: 
             //editRequest(); 
@@ -833,33 +828,33 @@ public class App {
         }
     }
 
-    // TODO: implement Services UID system into Lab Results
-
     public static void addRequest()
     {
-
         clear();
+
+        System.out.println("Input Service Code: ");
+        String serviceCode = input.nextLine(); 
+
+        // TODO: Integrate Service Lookup for crosschecking
+        // Essentially find the service code in Service.txt and check if it exists.
+
+        readRequest( serviceCode );
 
         LabResults lbr = new LabResults();
 
-        String answer;
         int requests_num = requests.size() - 1;
-        String sUID;
-        String rUID;
         Patient patient = new Patient();
 
         int day = LocalDate.now().getDayOfMonth();
 
         System.out.println("");
 
-        // If it is the first day of the month, reset patient_num to 0 (AA00)
+        // If it is the first day of the month, reset request_num to 0 (AA00)
         // Else, increase the patient_num
         if(day == 1) requests_num = 0;
         else requests_num++;
 
-        sUID = "CRP"; // TODO: User Selects service
-
-        rUID = sUID + LocalDate.now().format( DateTimeFormatter.ofPattern("YYYYMMdd") ) + "AA00"; // TODO: Place Holder Clear when rUID system has been set
+        String rUID = generaterUID( requests_num, serviceCode );
 
         System.out.println("Enter Information for Request:");
 
@@ -873,9 +868,7 @@ public class App {
         }
         else
         {
-
             // Setup lbr
-
             // rUID
             lbr.setrUID(rUID);
 
@@ -883,15 +876,121 @@ public class App {
             lbr.setpUID(patient.getUID());
 
             // Asks for Result
-            System.out.println("Enter Service Results:");
+            System.out.println("Enter Lab Results:");
             lbr.setResults(input.nextLine());
 
-            // Time Setup is here for more accuracy
+            // Setup time is here for more accurate time requested
             lbr.reqDate = LocalDate.now().format( DateTimeFormatter.ofPattern("YYYYMMdd") );
-            lbr.reqTime = LocalTime.now().format( DateTimeFormatter.ofPattern("hhmm") );
+            lbr.reqTime = ZonedDateTime.now(ZoneId.systemDefault()).format( DateTimeFormatter.ofPattern("HHmm") );
 
-            //System.out.printf("%-15s;%-12s;", );
+            System.out.printf("%s;%s;%s;%s;%s\n", lbr.getrUID(), lbr.getpUID(), lbr.getReqDate(), lbr.getReqTime(), lbr.getResults() );
 
+            System.out.print("Confirm Request [Y/N]? ");
+
+            if ( checkAnswer().equalsIgnoreCase("y") )
+            {
+                lbr.setIsDeleted(false);
+                writeRequest( serviceCode , lbr );
+                System.out.print("Successfully added request");
+                loading(3);
+            }
+            else
+            {
+                System.out.print("Request not added");
+                loading(3);
+            }
+        }
+    }
+
+    public static String generaterUID( int requests_num, String serviceCode )
+    {
+        // Unique Alpha Numeric Identifier
+        String id = formatValue( requests_num, 2, 2 );
+
+        return serviceCode + LocalDate.now().format( DateTimeFormatter.ofPattern("YYYYMMdd")) + id;
+    }
+
+    public static void writeRequest( String serviceCode, LabResults labResult )
+    {
+
+        try 
+        {
+
+            File outputFile = new File( serviceCode.toUpperCase() + "_requests.txt" );
+
+            BufferedWriter writer = new BufferedWriter( new FileWriter( outputFile, true ) );
+
+            // If not deleted
+            if ( !labResult.getIsDeleted() )
+            {
+                writer.write(
+                    labResult.getrUID() + ";" +
+                    labResult.getpUID() + ";" + 
+                    labResult.getReqDate() + ";" + 
+                    labResult.getReqTime() + ";" + 
+                    labResult.getResults()
+                );
+            }
+            else 
+            {
+                writer.write(
+                    labResult.getrUID() + ";" +
+                    labResult.getpUID() + ";" + 
+                    labResult.getReqDate() + ";" + 
+                    labResult.getReqTime() + ";" + 
+                    labResult.getResults() + ";" + 
+                    "D" + ";" +
+                    labResult.getDelReason()
+                );
+            }
+
+            writer.close();
+
+        }
+        catch ( IOException e )
+        {
+            System.out.println("An error occured");
+            e.printStackTrace();
+        }
+
+    }
+
+
+    // Reads a single request file from service code
+    public static void readRequest( String serviceCode )
+    {
+        try 
+        {
+
+            File outputFile = new File( serviceCode.toUpperCase() + "_requests.txt" );
+
+            Scanner scanner = new Scanner( outputFile );
+            String current;
+            String parts[] = {};
+
+            while ( scanner.hasNextLine() )
+            { 
+                current = scanner.nextLine();
+                parts = current.split(";");
+
+                if ( parts.length > 5 || parts[5].equalsIgnoreCase("D") )
+                {
+                    requests.add( new LabResults( parts[0], parts[1], parts[2], parts[3], parts[4], true, parts[6] ) );
+                }
+                else
+                {
+                    requests.add( new LabResults( parts[0], parts[1], parts[2], parts[3], parts[4]) );
+                }
+
+            }
+
+            scanner.close();
+
+        }
+        catch ( IOException e )
+        {
+            System.out.println("An error occured");
+            e.printStackTrace();
         }
 
     }
@@ -899,10 +998,8 @@ public class App {
     // Reusable Patient Search Engine
     // Returns Patient data type when patient with matching parameters are found
     // Its a loop until user stops
-    public static Patient returnPatient() {
-        
-        clear();
-
+    public static Patient returnPatient() 
+    {
         String answer; // user's input to prompt
         int found = 0; // counter for number of results
 

@@ -17,9 +17,9 @@ import com.itextpdf.text.pdf.*;
 public class App {
 
     static Scanner input = new Scanner(System.in);
-    private static ArrayList<Patient> records = new ArrayList<Patient>();
-    private static ArrayList<LabResults> requests = new ArrayList<LabResults>();
-    private static ArrayList<Service> services = new ArrayList<Service>();
+    private static ArrayList<Patient> patientRecords = new ArrayList<Patient>();
+    private static ArrayList<LabResults> requetsRecords = new ArrayList<LabResults>();
+    private static ArrayList<Service> serviceRecords = new ArrayList<Service>();
 
     public static void main(String[] args) throws Exception {
         String answer;
@@ -28,6 +28,7 @@ public class App {
         readRecord();
 
         do{
+
             mainMenu();
             
             // Ask user if they want to make another transaction
@@ -40,15 +41,14 @@ public class App {
     }
 
 /********************************************************************************************************************************************/
-    
     /*/
      *  Utilities
     /*/
 
     // Reads Patients.txt file to get records
     public static void readRecord() {
-        System.out.println("readRecord function:");
         
+        // reads Patients.txt file
         try {
             Scanner scanner = new Scanner(new File("Patients.txt"));
             String line = "";    // stores a line in the records
@@ -87,26 +87,65 @@ public class App {
                     );
                 }
 
-                // add new Patient object to records ArrayList
-                records.add(new Patient(uID, lastName, firstName, middleName, birthday, gender, address, phoneNum, nID, deleted, reason));
+                // add new Patient object to patientRecords ArrayList
+                patientRecords.add(new Patient(uID, lastName, firstName, middleName, birthday, gender, address, phoneNum, nID, deleted, reason));
             }
-
-            System.out.println("\n");
 
         } catch (FileNotFoundException e) {
             System.out.println("An error occured");
             e.printStackTrace();
         }
+
+        System.out.println("");
         
+        // reads Services.txt file
+        try {
+            Scanner scanner = new Scanner(new File("Services.txt"));
+            String line = "";    // stores a line in the records
+            String parts[] = {}; // array of String to store the parts of the line
+
+            while(scanner.hasNextLine()) {
+                line = scanner.nextLine();      // stores a line from Patients.txt file
+                parts = line.split(";"); // separates the line into parts
+
+                // assigns the portions of the String for the parameters of Patient object
+                String serviceCode = parts[0];
+                String description = parts[1];
+                double price = Double.parseDouble(parts[2]);
+                Boolean deleted = false; // parts[3]
+                String reason = "";      // parts[4]
+
+                // // if patient is deleted, update the variables
+                if (parts.length > 3) {
+                    if ("D".equals(parts[3])) deleted = true;
+                    reason = parts[4];
+
+                    System.out.printf("%s;%s;%.f;D;%s;\n", serviceCode, description, price, reason);
+
+                } else {
+                    // check record
+                    System.out.printf("%s;%s;%.2f;\n", serviceCode, description, price);
+                }
+
+                // add new Service object to serviceRecords ArrayList
+                serviceRecords.add(new Service(serviceCode, description, price, deleted, reason));
+            }
+
+        } catch (FileNotFoundException e) {
+            System.out.println("An error occured");
+            e.printStackTrace();
+        }
+
     }
     
-    // Write records to Patients.txt file
+    // Write records to Patients.txt and Services.txt file
     public static void writeRecord() {
         
+        // write Patients.txt file
         try {
             Writer writer = new BufferedWriter(new FileWriter("Patients.txt", false));
             
-            for (Patient patient : records) {
+            for (Patient patient : patientRecords) {
                 // patient is not deleted
                 if (patient.getIsDeleted() == false) {
                     writer.write(
@@ -139,12 +178,45 @@ public class App {
             }
 
             writer.close();
-            System.out.println("Successfully wrote to the file\n");
+            System.out.println("\nSuccessfully wrote to Patients file");
             
         } catch(IOException e) {
             System.out.println("An error occured.");
             e.printStackTrace();
         }
+
+        // write Services.txt file
+        try {
+            Writer writer = new BufferedWriter(new FileWriter("Services.txt", false));
+            
+            for (Service service : serviceRecords) {
+                // service is not deleted
+                if (service.getIsDeleted() == false) {
+                    writer.write(
+                        service.getServiceCode() + ";" +
+                        service.getDescription() + ";" +
+                        service.getPrice() + ";\n"
+                    );
+                    
+                } else { // service is deleted
+                    writer.write(
+                        service.getServiceCode() + ";" +
+                        service.getDescription() + ";" +
+                        service.getPrice() + ";D;" +
+                        service.getReason() + ";\n"
+                    );
+                }
+                
+            }
+
+            writer.close();
+            System.out.println("Successfully wrote to Services file\n");
+            
+        } catch(IOException e) {
+            System.out.println("An error occured.");
+            e.printStackTrace();
+        }
+
     }
 
     // Main Menu of the Medical Laboratory Information System 
@@ -170,7 +242,7 @@ public class App {
         switch(answer) {
             case 1: manageRecord(); break;
             case 2: System.out.println("Manage Services"); break;
-            case 3: System.out.println("Manage Laboratory Results"); break;
+            case 3: manageRequests(); break;
         }
     }
 
@@ -361,8 +433,28 @@ public class App {
         System.out.println("");
     }
 
+    /*/
+     *  Formats Number to a Alpha Numeric Numbering System 
+     *  Aian ( 05/18/22 ): Moved it and made this reusable
+    /*/
+    public static String formatValue(int input, int digits, int letters) {
+        var ret_val = new StringBuilder();
+
+        for ( int i = 0; i < digits; i++ )
+        {
+            ret_val.insert(0, input % 10);
+            input /= 10;
+        }
+        for ( int i = 0; i < letters; i++ )
+        {
+            ret_val.insert(0, (char)('A' + (input % 26)));
+            input /= 26;
+        }
+
+        return ret_val.toString();
+    }
+
 /********************************************************************************************************************************************/
-    
     /*/
      *  Patient System
     /*/
@@ -399,7 +491,7 @@ public class App {
         clear();
 
         String answer;
-        int patient_num = records.size() - 1;
+        int patient_num = patientRecords.size() - 1;
         String uID;
         int day = Calendar.getInstance().get(Calendar.DATE);
 
@@ -440,27 +532,8 @@ public class App {
         
         if(answer.equalsIgnoreCase("y")) 
         {
-            records.add(new Patient(uID, pLastName, pFirstName, pMiddleName, pBirthday, pGender, pAddress, pPhoneNum, pNationalID, false, ""));
+            patientRecords.add(new Patient(uID, pLastName, pFirstName, pMiddleName, pBirthday, pGender, pAddress, pPhoneNum, pNationalID, false, ""));
         }
-        
-        // Display all records
-        // Aian (05/17/22): Feels like this will be more cluttered once we have more entries, I suggest removing it
-        /*
-        System.out.println("\nPatient Records: ");
-        for(Patient patient : records) {
-            System.out.println (
-                patient.getUID() + ";" +
-                patient.getLastName() + ";" +
-                patient.getFirstName() + ";" +
-                patient.getMiddleName() + ";" +
-                patient.getBirthday() + ";" +
-                patient.getGender() + ";" +
-                patient.getAddress() + ";" +
-                patient.getPhoneNum() + ";" +
-                patient.getNationalID() + ";"
-            );
-        }
-        */
 
         // Aian (05/17/22): Replaced the thing above with this.
         System.out.println(uID + ";" + pLastName + ";" + pFirstName + ";" + pMiddleName + ";" + String.valueOf(pBirthday) + ";" + pGender + ";" + pAddress + ";" + String.valueOf(pPhoneNum) + ";" + String.valueOf(pNationalID) + ";");
@@ -496,7 +569,7 @@ public class App {
             info = input.nextLine();
 
             // loops through the records to look for patient
-            for (Patient patient : records) {
+            for (Patient patient : patientRecords) {
                 if (filterSearch(info, patient)) found++; // counts number of patient's with the same data as input     
             }
 
@@ -509,7 +582,7 @@ public class App {
                 );
 
                 // display list of multiple patients
-                for (Patient patient : records) {
+                for (Patient patient : patientRecords) {
                     if(filterSearch(info, patient)) {
                         System.out.printf("%-13s %-10s %-10s %-11s %-9d %-8s %-15s %-12d %-10d\n",
                             patient.getUID(), patient.getLastName(), patient.getFirstName(), 
@@ -529,7 +602,7 @@ public class App {
             // show search result when exactly one patient is found
             if (found == 1) { 
 
-                for (Patient patient : records) {
+                for (Patient patient : patientRecords) {
                     if (filterSearch(info, patient)) {
                         // display patient record to be edited
                         System.out.println(
@@ -591,7 +664,7 @@ public class App {
             info = input.nextLine();
 
             // loops through the records to look for patient
-            for (Patient patient : records) {
+            for (Patient patient : patientRecords) {
                 if (filterSearch(info, patient)) found++; // counts number of patient's with the same data as input     
             }
 
@@ -604,7 +677,7 @@ public class App {
                 );
 
                 // display list of multiple patients
-                for (Patient patient : records) {
+                for (Patient patient : patientRecords) {
                     if(filterSearch(info, patient)) {
                         System.out.printf("%-13s %-10s %-10s %-11s %-9d %-8s %-15s %-12d %-10d\n",
                             patient.getUID(), patient.getLastName(), patient.getFirstName(), 
@@ -624,7 +697,7 @@ public class App {
             // show search result when exactly one patient is found
             if (found == 1) { 
 
-                for (Patient patient : records) {
+                for (Patient patient : patientRecords) {
                     if (filterSearch(info, patient)) {
                         // display patient record to be deleted
                         System.out.println(
@@ -689,7 +762,7 @@ public class App {
             answer = input.nextLine();
     
             // loops through the records to look for patient
-            for (Patient patient : records) {
+            for (Patient patient : patientRecords) {
                 // counts number of patient's with the same data as input 
                 if(filterSearch(answer, patient)) found++;     
             }
@@ -702,7 +775,7 @@ public class App {
                 );
 
                 // display list of multiple patients
-                for (Patient patient : records) {
+                for (Patient patient : patientRecords) {
                     if(filterSearch(answer, patient)) {
                         System.out.printf("%-13s %-10s %-10s %-11s %-9d %-8s %-15s %-12d %-10d\n",
                             patient.getUID(), patient.getLastName(), patient.getFirstName(), 
@@ -719,7 +792,7 @@ public class App {
 
             // search result is exactly one patient
             if(found == 1) { 
-                for (Patient patient : records) {
+                for (Patient patient : patientRecords) {
                     if(filterSearch(answer, patient)) {
                         System.out.println(
                             patient.getUID() + "\n" +
@@ -763,26 +836,9 @@ public class App {
 
         LocalDate date = LocalDate.now();
         
-        retval = String.format("P%04d%02d%s", date.getYear(), date.getMonthValue(), formatValue(patient_num));
+        retval = String.format("P%04d%02d%s", date.getYear(), date.getMonthValue(), formatValue(patient_num, 2, 3));
         
         return retval;
-    }
-
-    // Formats patient number
-    public static String formatValue(int i) {
-        var ret_val = new StringBuilder();
-
-        ret_val.insert(0, i % 10);
-        i /= 10;
-        ret_val.insert(0, i % 10);
-        i /= 10;
-        ret_val.insert(0, (char)('A' + (i % 26)));
-        i /= 26;
-        ret_val.insert(0, (char)('A' + (i % 26)));
-        i /= 26;
-        ret_val.insert(0, (char)('A' + (i % 26)));
-
-        return ret_val.toString();
     }
     
     /*/
@@ -797,6 +853,98 @@ public class App {
         System.out.println(word.length());
     
         input.close();
+    }
+
+/********************************************************************************************************************************************/
+
+    /*/
+     *  Service System
+    /*/
+
+    // Add New Service
+    public static void addService() {      
+        String answer;
+        clear();
+
+        try {
+            do {
+                // reset answer at start of loop
+                answer = "N";
+
+                // 3 character code for the service
+                System.out.print("Enter 3 character code: ");
+                String serviceCode = input.nextLine();
+
+                // description of service
+                System.out.print("Enter description: ");
+                String description = input.nextLine();
+
+                // price of service
+                System.out.print("Enter price: ");
+                float price = input.nextFloat();
+
+                // create Service object and store it in serviceRecords ArrayList
+                serviceRecords.add(new Service(serviceCode, description, price, false, ""));
+
+                System.out.println(serviceCode + " " + description + " has been added.\n");
+
+                // ask if user wants to add another service
+                System.out.print("Do you want to add another service? [Y/N]: ");
+                answer = checkAnswer();
+
+            } while ("Y".equalsIgnoreCase(answer));            
+
+        } catch (Exception e) {
+            System.out.println("Error occured.");
+            e.printStackTrace();
+        }
+        
+    } 
+
+    // Search Service Record:
+    public static void searchService() throws MalformedURLException, IOException, DocumentException {
+        clear();
+        
+        String answer; // user's input to prompt
+        String info;   // info of services
+        int found;     // counts successful search
+
+        do{
+            // reset variable at start of loop
+            answer = "N";
+            found = 0;
+
+            // input for searching patient in the records
+            System.out.print("\nEnter Service Information: ");
+            info = input.nextLine();
+    
+            // sorts serviceRecords ArrayList alphabetically based on serviceCode
+            Collections.sort(serviceRecords, Comparator.comparing(Service::getServiceCode));
+
+            for (Service service : serviceRecords) {
+                if (info.equalsIgnoreCase(service.getServiceCode()) || service.getDescription().contains(info)) {
+                    
+                    if(found == 0) {
+                        // header
+                        System.out.printf("%-12s %-30s %s\n", "Service Code", "Description", "Price");
+                    }
+                    
+                    // list
+                    System.out.printf("%-12s %-30s %.2f\n", service.getServiceCode(), service.getDescription(), service.getPrice());
+
+                    found++;
+                }
+
+            }
+
+            if (found == 0) { // search unsuccessful
+                System.out.println("No record found.");
+                System.out.print("\nSearch again? [Y/N] ");
+                answer = checkAnswer();
+            }
+
+        } while ("Y".equalsIgnoreCase(answer));
+
     }
 
 /********************************************************************************************************************************************/
@@ -825,7 +973,7 @@ public class App {
         switch(answer) {
             case 0: mainMenu(); break;
             case 1: 
-            //addRequest(); 
+            addRequest(); 
             break;
             case 2: 
             //editRequest(); 
@@ -836,33 +984,33 @@ public class App {
         }
     }
 
-    // TODO: implement Services UID system into Lab Results
-
     public static void addRequest()
     {
-
         clear();
+
+        System.out.println("Input Service Code: ");
+        String serviceCode = input.nextLine(); 
+
+        // TODO: Integrate Service Lookup for crosschecking
+        // Essentially find the service code in Service.txt and check if it exists.
+
+        readRequest( serviceCode );
 
         LabResults lbr = new LabResults();
 
-        String answer;
-        int requests_num = requests.size() - 1;
-        String sUID;
-        String rUID;
+        int requests_num = requetsRecords.size() - 1;
         Patient patient = new Patient();
 
         int day = LocalDate.now().getDayOfMonth();
 
         System.out.println("");
 
-        // If it is the first day of the month, reset patient_num to 0 (AA00)
+        // If it is the first day of the month, reset request_num to 0 (AA00)
         // Else, increase the patient_num
         if(day == 1) requests_num = 0;
         else requests_num++;
 
-        sUID = "CRP"; // TODO: User Selects service
-
-        rUID = sUID + LocalDate.now().format( DateTimeFormatter.ofPattern("YYYYMMdd") ) + "AA00"; // TODO: Place Holder Clear when rUID system has been set
+        String rUID = generaterUID( requests_num, serviceCode );
 
         System.out.println("Enter Information for Request:");
 
@@ -876,9 +1024,7 @@ public class App {
         }
         else
         {
-
             // Setup lbr
-
             // rUID
             lbr.setrUID(rUID);
 
@@ -886,15 +1032,121 @@ public class App {
             lbr.setpUID(patient.getUID());
 
             // Asks for Result
-            System.out.println("Enter Service Results:");
+            System.out.println("Enter Lab Results:");
             lbr.setResults(input.nextLine());
 
-            // Time Setup is here for more accuracy
+            // Setup time is here for more accurate time requested
             lbr.reqDate = LocalDate.now().format( DateTimeFormatter.ofPattern("YYYYMMdd") );
-            lbr.reqTime = LocalTime.now().format( DateTimeFormatter.ofPattern("hhmm") );
+            lbr.reqTime = ZonedDateTime.now(ZoneId.systemDefault()).format( DateTimeFormatter.ofPattern("HHmm") );
 
-            //System.out.printf("%-15s;%-12s;", );
+            System.out.printf("%s;%s;%s;%s;%s\n", lbr.getrUID(), lbr.getpUID(), lbr.getReqDate(), lbr.getReqTime(), lbr.getResults() );
 
+            System.out.print("Confirm Request [Y/N]? ");
+
+            if ( checkAnswer().equalsIgnoreCase("y") )
+            {
+                lbr.setIsDeleted(false);
+                writeRequest( serviceCode , lbr );
+                System.out.print("Successfully added request");
+                loading(3);
+            }
+            else
+            {
+                System.out.print("Request not added");
+                loading(3);
+            }
+        }
+    }
+
+    public static String generaterUID( int requests_num, String serviceCode )
+    {
+        // Unique Alpha Numeric Identifier
+        String id = formatValue( requests_num, 2, 2 );
+
+        return serviceCode + LocalDate.now().format( DateTimeFormatter.ofPattern("YYYYMMdd")) + id;
+    }
+
+    public static void writeRequest( String serviceCode, LabResults labResult )
+    {
+
+        try 
+        {
+
+            File outputFile = new File( serviceCode.toUpperCase() + "_requests.txt" );
+
+            BufferedWriter writer = new BufferedWriter( new FileWriter( outputFile, true ) );
+
+            // If not deleted
+            if ( !labResult.getIsDeleted() )
+            {
+                writer.write(
+                    labResult.getrUID() + ";" +
+                    labResult.getpUID() + ";" + 
+                    labResult.getReqDate() + ";" + 
+                    labResult.getReqTime() + ";" + 
+                    labResult.getResults()
+                );
+            }
+            else 
+            {
+                writer.write(
+                    labResult.getrUID() + ";" +
+                    labResult.getpUID() + ";" + 
+                    labResult.getReqDate() + ";" + 
+                    labResult.getReqTime() + ";" + 
+                    labResult.getResults() + ";" + 
+                    "D" + ";" +
+                    labResult.getDelReason()
+                );
+            }
+
+            writer.close();
+
+        }
+        catch ( IOException e )
+        {
+            System.out.println("An error occured");
+            e.printStackTrace();
+        }
+
+    }
+
+
+    // Reads a single request file from service code
+    public static void readRequest( String serviceCode )
+    {
+        try 
+        {
+
+            File outputFile = new File( serviceCode.toUpperCase() + "_requests.txt" );
+
+            Scanner scanner = new Scanner( outputFile );
+            String current;
+            String parts[] = {};
+
+            while ( scanner.hasNextLine() )
+            { 
+                current = scanner.nextLine();
+                parts = current.split(";");
+
+                if ( parts.length > 5 || parts[5].equalsIgnoreCase("D") )
+                {
+                    requetsRecords.add( new LabResults( parts[0], parts[1], parts[2], parts[3], parts[4], true, parts[6] ) );
+                }
+                else
+                {
+                    requetsRecords.add( new LabResults( parts[0], parts[1], parts[2], parts[3], parts[4]) );
+                }
+
+            }
+
+            scanner.close();
+
+        }
+        catch ( IOException e )
+        {
+            System.out.println("An error occured");
+            e.printStackTrace();
         }
 
     }
@@ -902,10 +1154,8 @@ public class App {
     // Reusable Patient Search Engine
     // Returns Patient data type when patient with matching parameters are found
     // Its a loop until user stops
-    public static Patient returnPatient() {
-        
-        clear();
-
+    public static Patient returnPatient() 
+    {
         String answer; // user's input to prompt
         int found = 0; // counter for number of results
 
@@ -919,7 +1169,7 @@ public class App {
             answer = input.nextLine();
     
             // loops through the records to look for patient
-            for (Patient patient : records) {
+            for (Patient patient : patientRecords) {
                 // counts number of patient's with the same data as input 
                 if(filterSearch(answer, patient)) found++;     
             }
@@ -933,7 +1183,7 @@ public class App {
                 );
 
                 // Print all Matching Patients
-                for (Patient patient : records) {
+                for (Patient patient : patientRecords) {
                     if(filterSearch(answer, patient)) {
                         System.out.printf("%-13s %-10s %-10s %-11s %-9d %-8s %-15s %-12d %-10d\n",
                             patient.getUID(), patient.getLastName(), patient.getFirstName(), 
@@ -953,7 +1203,7 @@ public class App {
             // search result is exactly one patient
             if(found == 1) 
             { 
-                for (Patient patient : records) {
+                for (Patient patient : patientRecords) {
                     if(filterSearch(answer, patient)) {
                         
                         return patient;
@@ -976,122 +1226,5 @@ public class App {
         return null;
 
     }
-
-    /********************************************************************************************************************************************/
-
-    /*/
-     *  Service System
-    /*/
-
-    // Manage Service Records
-    public static void manageServiceRecord() throws MalformedURLException, IOException, DocumentException {
-        clear();
-        
-        int answer;
-
-        System.out.print (
-            "Manage Service Records\n" +
-            "[1] Add New Service\n" +
-            "[2] Edit Service Record\n" +
-            "[3] Delete Service Record\n" +
-            "[4] Search Service Record\n" +
-            "[0] Return to Main Menu\n\n" +
-            "Select a transaction: "
-        );
-
-        answer = checkInput(0, 4);
-
-        switch(answer) {
-            case 0: mainMenu(); break;
-            case 1: addService(); break;
-            case 4: searchService(); break;
-        }
-    }
-
-    public static void addService() {      
-        String answer;
-        clear();
-
-        try {
-            do {
-                // reset answer at start of loop
-                answer = "N";
-
-                // 3 character code for the service
-                System.out.print("Enter 3 character code: ");
-                String serviceCode = input.nextLine();
-
-                // description of service
-                System.out.print("Enter description: ");
-                String description = input.nextLine();
-
-                // price of service
-                System.out.print("Enter price: ");
-                float price = input.nextFloat();
-
-                // create Service object and store it in serviceRecords ArrayList
-                services.add(new Service(serviceCode, description, price, false, ""));
-
-                System.out.println(serviceCode + " " + description + " has been added.\n");
-
-                // ask if user wants to add another service
-                System.out.print("Do you want to add another service? [Y/N]: ");
-                answer = checkAnswer();
-
-            } while ("Y".equalsIgnoreCase(answer));            
-
-        } catch (Exception e) {
-            System.out.println("Error occured.");
-            e.printStackTrace();
-        }
-        
-    }
-
-    // Search Service Record:
-    public static void searchService() throws MalformedURLException, IOException, DocumentException {
-        clear();
-        
-        String answer; // user's input to prompt
-        String info;   // info of services
-        int found;     // counts successful search
-
-        do{
-            // reset variable at start of loop
-            answer = "N";
-            found = 0;
-
-            // input for searching patient in the records
-            System.out.print("\nEnter Service Information: ");
-            info = input.nextLine();
-    
-            // sorts serviceRecords ArrayList alphabetically based on serviceCode
-            Collections.sort(services, Comparator.comparing(Service::getServiceCode));
-
-            for (Service service : services) {
-                if (info.equalsIgnoreCase(service.getServiceCode()) || service.getDescription().contains(info)) {
-                    
-                    if(found == 0) {
-                        // header
-                        System.out.printf("%-12s %-30s %s\n", "Service Code", "Description", "Price");
-                    }
-                    
-                    // list
-                    System.out.printf("%-12s %-30s %.2f\n", service.getServiceCode(), service.getDescription(), service.getPrice());
-
-                    found++;
-                }
-
-            }
-
-            if (found == 0) { // search unsuccessful
-                System.out.println("No record found.");
-                System.out.print("\nSearch again? [Y/N] ");
-                answer = checkAnswer();
-            }
-
-        } while ("Y".equalsIgnoreCase(answer));
-
-    }
-
 
 }

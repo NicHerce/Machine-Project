@@ -798,7 +798,7 @@ public class Draft {
             table.addCell(cell);
 
             // phone number of patient
-            cell.setPhrase(new Paragraph(String.format("Phone Number: %011d", patient.getPhoneNum())));
+            cell.setPhrase(new Paragraph(String.format("Phone Number: %011d", Long.parseLong(patient.getPhoneNum()))));
             table.addCell(cell);
 
             // create test and result table
@@ -946,7 +946,7 @@ public class Draft {
                 // display list of multiple patients
                 for (Patient patient : patientRecords) {
                     if(filterSearch(info, patient)) {
-                        System.out.printf("%-13s %-10s %-10s %-11s %-9d %-8s %-15s %-12d %-10d\n",
+                        System.out.printf("%-13s %-10s %-10s %-11s %-9d %-8s %-15s %-12s %-10s\n",
                             patient.getUID(), patient.getLastName(), patient.getFirstName(), 
                             patient.getMiddleName(), patient.getBirthday(), patient.getGender(),
                             patient.getAddress(), patient.getPhoneNum(), patient.getNationalID()
@@ -1041,7 +1041,7 @@ public class Draft {
                 // display list of multiple patients
                 for (Patient patient : patientRecords) {
                     if(filterSearch(info, patient)) {
-                        System.out.printf("%-13s %-10s %-10s %-11s %-9d %-8s %-15s %-12d %-10d\n",
+                        System.out.printf("%-13s %-10s %-10s %-11s %-9d %-8s %-15s %-12s %-10s\n",
                             patient.getUID(), patient.getLastName(), patient.getFirstName(), 
                             patient.getMiddleName(), patient.getBirthday(), patient.getGender(),
                             patient.getAddress(), patient.getPhoneNum(), patient.getNationalID()
@@ -1114,6 +1114,7 @@ public class Draft {
         
         String answer; // user's input to prompt
         int found = 0; // counter for number of results
+        String info;   // info of patient
 
         do{
             // reset variables at start of loop
@@ -1122,12 +1123,12 @@ public class Draft {
 
             // input for searching patient in the records
             System.out.print("\nEnter Patient Information: ");
-            answer = input.nextLine();
+            info = input.nextLine();
     
             // loops through the records to look for patient
             for (Patient patient : patientRecords) {
                 // counts number of patients with the same data as input 
-                if(filterSearch(answer, patient)) found++;     
+                if(filterSearch(info, patient)) found++;     
             }
 
             // outputs row if there is no header and if there are patients with same data
@@ -1139,8 +1140,8 @@ public class Draft {
 
                 // display list of multiple patients
                 for (Patient patient : patientRecords) {
-                    if(filterSearch(answer, patient)) {
-                        System.out.printf("%-13s %-10s %-10s %-11s %-9d %-8s %-15s %-12d %-10d\n",
+                    if(filterSearch(info, patient)) {
+                        System.out.printf("%-13s %-10s %-10s %-11s %-9d %-8s %-15s %-12s %-10s\n",
                             patient.getUID(), patient.getLastName(), patient.getFirstName(), 
                             patient.getMiddleName(), patient.getBirthday(), patient.getGender(),
                             patient.getAddress(), patient.getPhoneNum(), patient.getNationalID()
@@ -1149,14 +1150,14 @@ public class Draft {
                 }
 
                 System.out.print("\nEnter the patient's UID that you want to display: ");
-                answer = input.nextLine();
+                info = input.nextLine();
                 found = 1;
             }
 
             // search result is exactly one patient
             if(found == 1) { 
                 for (Patient patient : patientRecords) {
-                    if(filterSearch(answer, patient)) {
+                    if(filterSearch(info, patient)) {
                         System.out.println(
                             patient.getUID() + "\n" +
                             patient.getLastName() + ", " + patient.getFirstName() + " " + 

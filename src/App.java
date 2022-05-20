@@ -243,8 +243,8 @@ public class App {
 
         // Executes based on the answer of the user:
         switch(answer) {
-            case 1: manageRecord(); break;
-            case 2: System.out.println("Manage Services"); break;
+            case 1: managePatient(); break;
+            case 2: manageService(); break;
             case 3: manageRequests(); break;
         }
     }
@@ -463,7 +463,7 @@ public class App {
     /*/
 
     // Manage Patient Records
-    public static void manageRecord() throws MalformedURLException, IOException, DocumentException {
+    public static void managePatient() throws MalformedURLException, IOException, DocumentException {
         clear();
         
         int answer;
@@ -865,7 +865,7 @@ public class App {
     /*/
 
     // Manage Service Records
-    public static void manageServiceRecord() throws MalformedURLException, IOException, DocumentException {
+    public static void manageService() throws MalformedURLException, IOException, DocumentException {
         clear();
         
         int transaction;

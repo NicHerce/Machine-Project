@@ -2,6 +2,10 @@
     Medical Laboratory Information System 
 */
 
+// TODO: Create separate class files for each section of App.java
+// Essentially Utilities will be placed in Utilities.java, 
+// Patient in Patients.java (Maybe we can get away with putting it in Patient.java),
+// ETC... ETC...
 
 /*/
  *  Aian ( 05/16/22 ): Optimized and shortened
@@ -29,7 +33,8 @@ public class App {
 
         do{
 
-            mainMenu();
+            searchRequest();
+            //mainMenu();
             
             // Ask user if they want to make another transaction
             System.out.print("\nReturn to Main Menu? [Y/N]: ");
@@ -963,7 +968,8 @@ public class App {
             "Manage Laboratory Requests\n" +
             "[1] Add New Request\n" +
             "[2] Search Request\n" +
-            "[3] Edit Request\n" +
+            "[3] Delete Request\n" +
+            "[4] Edit Request\n" +
             "[0] Return to Main Menu\n\n" +
             "Select a transaction: "
         );
@@ -973,17 +979,15 @@ public class App {
         switch(answer) {
             case 0: mainMenu(); break;
             case 1: 
-                do
-                {
-                    addRequest(); 
-                    System.out.println( "Do you want to add another Laboratory Request? [Y/N]" );
-                }
-                while ( !checkAnswer().equalsIgnoreCase("N") );
+                addRequest();
             break;
             case 2: 
-                //editRequest(); 
+                searchRequest();
             break;
             case 3: 
+                //deleteRequest(); 
+            break;
+            case 4: 
                 //deleteRequest(); 
             break;
         }
@@ -991,72 +995,78 @@ public class App {
 
     public static void addRequest()
     {
-        clear();
-
-        Service service = returnCode();
-
-        // If User stops searching go back to menu
-        if ( service == null ) return;
-
-        // Stores data in array list
-        readRequest( service.getServiceCode() );
-
-        // Some Variables
-        LabResults lbr = new LabResults();
-        int requests_num = requestRecords.size() - 1;
-        Patient patient = new Patient();
-        int day = LocalDate.now().getDayOfMonth();
-
-        System.out.println("");
-
-        // If it is the first day of the month, reset request_num to 0 (AA00)
-        // Else, increase the patient_num
-        if(day == 1) requests_num = 0;
-        else requests_num++;
-
-        String rUID = generaterUID( requests_num, service.getServiceCode() );
-
-        System.out.println("Enter Information for Request:");
-
-        // Select Patient Prompt for request
-        patient = returnPatient();
-
-        // If User stops searching go back to menu
-        if ( patient == null ) return;
-
-        // Set Up LBR
-        // rUID
-        lbr.setrUID(rUID);
-
-        // SetUP UID of Patient
-        lbr.setpUID(patient.getUID());
-
-        // Asks for Result
-        System.out.println("Enter Lab Results:");
-        lbr.setResults(input.nextLine());
-
-        // Setup time is here for more accurate time requested
-        lbr.reqDate = LocalDate.now().format( DateTimeFormatter.ofPattern("YYYYMMdd") );
-        lbr.reqTime = ZonedDateTime.now(ZoneId.systemDefault()).format( DateTimeFormatter.ofPattern("HHmm") );
-
-        System.out.printf("%s;%s;%s;%s;%s\n", lbr.getrUID(), lbr.getpUID(), lbr.getReqDate(), lbr.getReqTime(), lbr.getResults() );
-
-        System.out.print("Confirm Request [Y/N]? ");
-        if ( checkAnswer().equalsIgnoreCase("y") )
+        do
         {
-            requestRecords.add(lbr);
-            writeRequest( service.getServiceCode() );
-            System.out.print( "Laboratory Request " + lbr.rUID + " has been added to file " + service.getServiceCode() +"_Requests.txt.");
-            loading(3);
-        }
-        else
-        {
-            System.out.print("Request not added");
-            loading(3);
-        }
+            clear();
 
-        // Flushes records for other sessions
-        requestRecords.clear();
+            Service service = returnServiceCode();
+
+            // If User stops searching go back to menu
+            if ( service == null ) return;
+
+            // Stores data in array list
+            readRequest( service.getServiceCode() );
+
+            // Some Variables
+            LabResults lbr = new LabResults();
+            int requests_num = requestRecords.size() - 1;
+            Patient patient = new Patient();
+            int day = LocalDate.now().getDayOfMonth();
+
+            System.out.println("");
+
+            // If it is the first day of the month, reset request_num to 0 (AA00)
+            // Else, increase the patient_num
+            if(day == 1) requests_num = 0;
+            else requests_num++;
+
+            String rUID = generaterUID( requests_num, service.getServiceCode() );
+
+            System.out.println("Enter Information for Request:");
+
+            // Select Patient Prompt for request
+            patient = returnPatient();
+
+            // If User stops searching go back to menu
+            if ( patient == null ) return;
+
+            // Set Up LBR
+            // rUID
+            lbr.setrUID(rUID);
+
+            // SetUP UID of Patient
+            lbr.setpUID(patient.getUID());
+
+            // Asks for Result
+            System.out.println("Enter Lab Results:");
+            lbr.setResults(input.nextLine());
+
+            // Setup time is here for more accurate time requested
+            lbr.reqDate = LocalDate.now().format( DateTimeFormatter.ofPattern("YYYYMMdd") );
+            lbr.reqTime = ZonedDateTime.now(ZoneId.systemDefault()).format( DateTimeFormatter.ofPattern("HHmm") );
+
+            System.out.printf("%s;%s;%s;%s;%s\n", lbr.getrUID(), lbr.getpUID(), lbr.getReqDate(), lbr.getReqTime(), lbr.getResults() );
+
+            System.out.print("Confirm Request [Y/N]? ");
+            if ( checkAnswer().equalsIgnoreCase("y") )
+            {
+                requestRecords.add(lbr);
+                writeRequest( service.getServiceCode() );
+                System.out.print( "Laboratory Request " + lbr.rUID + " has been added to file " + service.getServiceCode() +"_Requests.txt.");
+                loading(3);
+            }
+            else
+            {
+                System.out.print("Request not added");
+                loading(3);
+            }
+
+            // Flushes records for other sessions
+            requestRecords.clear();
+            
+            System.out.println( "Do you want to add another Laboratory Request? [Y/N]" );
+        }
+        while ( !checkAnswer().equalsIgnoreCase("N") );
     }
 
     public static String generaterUID( int requests_num, String serviceCode )
@@ -1067,12 +1077,76 @@ public class App {
         return serviceCode + LocalDate.now().format( DateTimeFormatter.ofPattern("YYYYMMdd")) + id;
     }
 
-    public static void writeRequest( String serviceCode )
+
+    // Writes on all files
+    public static void writeRequest()
     {
 
         try 
         {
 
+            for ( Service service : serviceRecords )
+            {
+
+                File outputFile = new File( service.getServiceCode().toUpperCase() + "_requests.txt" );
+
+                if ( !outputFile.exists() )
+                {
+                    outputFile.createNewFile();
+                }
+
+                BufferedWriter writer = new BufferedWriter( new FileWriter( outputFile ) );
+
+                for ( LabResults labResults : requestRecords )
+                {
+                    if ( labResults.getServiceCode() == null )
+                    {
+                        labResults.setServiceCode(labResults.getrUID().substring(0, 3));
+                    }
+
+                    // If not deleted
+                    if ( labResults.getIsDeleted() == null )
+                    {
+                        writer.write(
+                            labResults.getrUID() + ";" +
+                            labResults.getpUID() + ";" + 
+                            labResults.getReqDate() + ";" + 
+                            labResults.getReqTime() + ";" + 
+                            labResults.getResults() + "\n" 
+                        );
+                    }
+                    else 
+                    {
+                        writer.write(
+                            labResults.getrUID() + ";" +
+                            labResults.getpUID() + ";" + 
+                            labResults.getReqDate() + ";" + 
+                            labResults.getReqTime() + ";" + 
+                            labResults.getResults() + ";" + 
+                            "D" + ";" +
+                            labResults.getDelReason() + "\n" 
+                        );
+                    }
+                }
+                
+                writer.close();
+
+            }
+        }
+        catch ( IOException e )
+        {
+            System.out.println("An error occured");
+            e.printStackTrace();
+        }
+
+    }
+
+    // Writes on one file
+    public static void writeRequest( String serviceCode )
+    {
+
+        try 
+        {
             File outputFile = new File( serviceCode.toUpperCase() + "_requests.txt" );
 
             if ( !outputFile.exists() )
@@ -1084,6 +1158,11 @@ public class App {
 
             for ( LabResults labResults : requestRecords )
             {
+                if ( labResults.getServiceCode() == null )
+                {
+                    labResults.setServiceCode(labResults.getrUID().substring(0, 3));
+                }
+
                 // If not deleted
                 if ( labResults.getIsDeleted() == null )
                 {
@@ -1110,7 +1189,6 @@ public class App {
             }
             
             writer.close();
-
         }
         catch ( IOException e )
         {
@@ -1120,12 +1198,59 @@ public class App {
 
     }
 
+    // Reads a all request files from service code
+    public static void readRequest()
+    {
+        try 
+        {
+
+            for ( Service service : serviceRecords )
+            {
+
+                File outputFile = new File( service.getServiceCode().toUpperCase() + "_requests.txt" );
+
+                if ( !outputFile.exists() )
+                {
+                    outputFile.createNewFile();
+                }
+
+                Scanner scanner = new Scanner( outputFile );
+                String current;
+                String parts[] = {};
+
+                while ( scanner.hasNextLine() )
+                { 
+                    current = scanner.nextLine();
+                    parts = current.split(";");
+
+                    if ( parts.length > 5 )
+                    {
+                        requestRecords.add( new LabResults( parts[0], parts[1], parts[2], parts[3], parts[4], true, parts[6], parts[0].substring(0, 3) ) );
+                    }
+                    else
+                    {
+                        requestRecords.add( new LabResults( parts[0], parts[1], parts[2], parts[3], parts[4], parts[0].substring(0, 3))  );
+                    }
+
+                }
+
+                scanner.close();
+
+            }
+
+        }
+        catch ( IOException e )
+        {
+            System.out.println("An error occured");
+            e.printStackTrace();
+        }
+    }
+
     // Reads a single request file from service code
     public static void readRequest( String serviceCode )
     {
         try 
         {
-
             File outputFile = new File( serviceCode.toUpperCase() + "_requests.txt" );
 
             if ( !outputFile.exists() )
@@ -1144,11 +1269,11 @@ public class App {
 
                 if ( parts.length > 5 )
                 {
-                    requestRecords.add( new LabResults( parts[0], parts[1], parts[2], parts[3], parts[4], true, parts[6] ) );
+                    requestRecords.add( new LabResults( parts[0], parts[1], parts[2], parts[3], parts[4], true, parts[6], parts[0].substring(0, 3) ) );
                 }
                 else
                 {
-                    requestRecords.add( new LabResults( parts[0], parts[1], parts[2], parts[3], parts[4]) );
+                    requestRecords.add( new LabResults( parts[0], parts[1], parts[2], parts[3], parts[4], parts[0].substring(0, 3))  );
                 }
 
             }
@@ -1161,7 +1286,6 @@ public class App {
             System.out.println("An error occured");
             e.printStackTrace();
         }
-
     }
 
     // Reusable Patient Search Engine
@@ -1240,7 +1364,7 @@ public class App {
 
     }
 
-    public static Service returnCode()
+    public static Service returnServiceCode()
     {
 
         do
@@ -1262,6 +1386,79 @@ public class App {
         while ( !checkAnswer().equalsIgnoreCase("N"));
 
         return null;
+
+    }
+
+    // non-case sensitive but requires exact code
+    public static void searchRequest()
+    {
+        // Put all file inputs into requestRecords
+        readRequest();
+
+        do 
+        {
+            clear();
+
+            ArrayList<LabResults> searchResults = new ArrayList<LabResults>();
+
+            System.out.println("Input Request UID or Patient UID: ");
+            String key = input.nextLine();
+            String descriptor = "";
+            int found = 0;
+
+            // For each lbr in request records check if key matches request uid or patient uid
+            for ( LabResults lbr : requestRecords )
+            {
+                if ( lbr.getrUID().equalsIgnoreCase( key ) || lbr.getpUID().equalsIgnoreCase( key ) )
+                {
+                    searchResults.add(lbr);
+                    found++;
+                }
+            }
+
+            // if more than one found
+            if ( found >= 1 )
+            {
+                System.out.printf("%-15s | %-30s | %-12s | %s\n", "Request's UID", "Lab Test Type", "Request Date", "Result" );
+                for ( LabResults lbr : searchResults )        
+                {
+                    for ( Service service : serviceRecords )
+                    {
+                        if ( service.getServiceCode().equalsIgnoreCase(lbr.getrUID().substring(0, 3)))
+                        {
+                            descriptor = service.getDescription();
+                            break;
+                        }
+                    }
+                    System.out.printf("%-15s | %-30s | %-12s | %s\n", lbr.getrUID(), descriptor, lbr.getReqDate(), lbr.getResults() );
+                }
+            }
+
+            // If no matches
+            if ( found == 0 )
+            {
+                System.out.print("No record found");
+                loading(3);
+            }
+            System.out.println("Search again [Y/N]?");
+        }
+        while ( !checkAnswer().equalsIgnoreCase("N") );
+
+    }
+
+    // TODO: Delete Request
+
+    public static void deleteRequest()
+    {
+
+    }
+
+    // TODO: Edit Request
+
+    public static void editRequest()
+    {
+
+
 
     }
 

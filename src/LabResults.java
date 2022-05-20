@@ -2,6 +2,7 @@
 public class LabResults 
 {
 
+    String serviceCode;
     String rUID;
     String pUID;
     String reqDate;
@@ -19,7 +20,7 @@ public class LabResults
     /*/
      *  Constructor
     /*/
-    public LabResults(String rUID, String pUID, String reqDate, String reqTime, String results) {
+    public LabResults(String rUID, String pUID, String reqDate, String reqTime, String results, String serviceCode) {
         this.rUID = rUID;
         this.pUID = pUID;
         this.reqDate = reqDate;
@@ -28,7 +29,7 @@ public class LabResults
     }
 
     public LabResults(String rUID, String pUID, String reqDate, String reqTime, String results, Boolean isDeleted,
-            String delReason) {
+            String delReason, String serviceCode) {
         this.rUID = rUID;
         this.pUID = pUID;
         this.reqDate = reqDate;
@@ -96,6 +97,14 @@ public class LabResults
 
     public void setDelReason(String delReason) {
         this.delReason = delReason;
+    }
+
+    public String getServiceCode() {
+        return serviceCode;
+    }
+
+    public void setServiceCode(String serviceCode) {
+        this.serviceCode = serviceCode;
     }
 
 }

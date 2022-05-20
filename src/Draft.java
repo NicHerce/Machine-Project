@@ -19,21 +19,19 @@ public class Draft {
     private static ArrayList<Service> serviceRecords = new ArrayList<Service>();
 
     public static void main(String[] args) throws Exception {
-        // String answer;
+        String answer;
         
         // Reads Patients.txt file to get records
         readRecord();
         System.out.println("successfully read files");
 
-        manageServiceRecord();
-
-        // do{
-        //     mainMenu();
+        do{
+            mainMenu();
             
-        //     // Ask user if they want to make another transaction
-        //     System.out.print("\nReturn to Main Menu? [Y/N]: ");
-        //     answer = input.next(); input.nextLine();
-        // }while("y".equalsIgnoreCase(answer));
+            // Ask user if they want to make another transaction
+            System.out.print("\nReturn to Main Menu? [Y/N]: ");
+            answer = input.next(); input.nextLine();
+        }while("y".equalsIgnoreCase(answer));
         
         // Write records to Patients.txt file
         writeRecord();

@@ -330,7 +330,7 @@ public class App {
             line.setAlignment(Element.ALIGN_CENTER);
 
             // create new paragraph object
-            Paragraph text = new Paragraph("Racoon City, USA\nTelephone: (8)949533");
+            Paragraph text = new Paragraph("Raccoon City, USA\nTelephone: (8)949533");
             text.setAlignment(Element.ALIGN_CENTER);
 
             // create table

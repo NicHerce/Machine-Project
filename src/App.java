@@ -33,7 +33,7 @@ public class App {
 
         do{
 
-            searchRequest();
+            deleteRequest();
             //mainMenu();
             
             // Ask user if they want to make another transaction
@@ -999,7 +999,7 @@ public class App {
         {
             clear();
 
-            Service service = returnServiceCode();
+            Service service = returnService();
 
             // If User stops searching go back to menu
             if ( service == null ) return;
@@ -1105,7 +1105,7 @@ public class App {
                     }
 
                     // If not deleted
-                    if ( labResults.getIsDeleted() == null )
+                    if ( labResults.getIsDeleted() == null || labResults.getIsDeleted() == false )
                     {
                         writer.write(
                             labResults.getrUID() + ";" +
@@ -1164,7 +1164,7 @@ public class App {
                 }
 
                 // If not deleted
-                if ( labResults.getIsDeleted() == null )
+                if ( labResults.getIsDeleted() == null || labResults.getIsDeleted() == false )
                 {
                     writer.write(
                         labResults.getrUID() + ";" +
@@ -1364,7 +1364,7 @@ public class App {
 
     }
 
-    public static Service returnServiceCode()
+    public static Service returnService()
     {
 
         do
@@ -1389,6 +1389,8 @@ public class App {
 
     }
 
+
+    // TODO: implement delete check here
     // non-case sensitive but requires exact code
     public static void searchRequest()
     {
@@ -1412,12 +1414,13 @@ public class App {
                 if ( lbr.getrUID().equalsIgnoreCase( key ) || lbr.getpUID().equalsIgnoreCase( key ) )
                 {
                     searchResults.add(lbr);
-                    found++;
                 }
             }
 
-            // if more than one found
-            if ( found >= 1 )
+            // Sorts searchResults
+            Collections.sort( searchResults, Comparator.comparing( LabResults::getReqDate ).thenComparing( LabResults::getrUID ).reversed() );
+
+            if ( searchResults.size() > 1 )
             {
                 System.out.printf("%-15s | %-30s | %-12s | %s\n", "Request's UID", "Lab Test Type", "Request Date", "Result" );
                 for ( LabResults lbr : searchResults )        
@@ -1430,12 +1433,14 @@ public class App {
                             break;
                         }
                     }
+                    
+                    if ( lbr.getIsDeleted() == false )
                     System.out.printf("%-15s | %-30s | %-12s | %s\n", lbr.getrUID(), descriptor, lbr.getReqDate(), lbr.getResults() );
                 }
             }
 
             // If no matches
-            if ( found == 0 )
+            if ( searchResults.size() == 0 )
             {
                 System.out.print("No record found");
                 loading(3);
@@ -1451,6 +1456,110 @@ public class App {
     public static void deleteRequest()
     {
 
+        readRequest();
+
+        do 
+        {
+            clear();
+
+            ArrayList<LabResults> searchResults = new ArrayList<LabResults>();
+
+            System.out.println("Input Request UID or Patient UID: ");
+            String key = input.nextLine();
+            String descriptor = "";
+
+            // For each lbr in request records check if key matches request uid or patient uid
+            for ( LabResults lbr : requestRecords )
+            {
+                if ( lbr.getrUID().equalsIgnoreCase( key ) || lbr.getpUID().equalsIgnoreCase( key ) )
+                {
+                    if ( lbr.getIsDeleted() == null || lbr.getIsDeleted() != true )
+                    searchResults.add(lbr);
+                }
+            }
+
+            Collections.sort( searchResults, Comparator.comparing( LabResults::getReqDate ).thenComparing( LabResults::getrUID ).reversed() );
+
+            // If there are more than 1 results
+            if ( searchResults.size() > 1 )
+            {
+                // Print all results
+                System.out.printf("%-15s | %-30s | %-12s | %s\n", "Request's UID", "Lab Test Type", "Request Date", "Result" );
+                for ( LabResults lbr : searchResults )        
+                {
+                    for ( Service service : serviceRecords )
+                    {
+                        if ( service.getServiceCode().equalsIgnoreCase(lbr.getrUID().substring(0, 3)))
+                        {
+                            descriptor = service.getDescription();
+                            break;
+                        }
+                    }
+                    System.out.printf("%-15s | %-30s | %-12s | %s\n", lbr.getrUID(), descriptor, lbr.getReqDate(), lbr.getResults() );
+                }
+
+                // User inputs id of to be deleted
+                System.out.println("\nInput UID of Request to be deleted: ");
+                String answer = input.nextLine();
+                // Removes all that does not match
+                searchResults.removeIf( e -> !e.rUID.equalsIgnoreCase(answer) );
+                
+            }
+
+            if ( searchResults.size() == 1 )
+            {
+                // Gets descriptor...
+                for ( Service service : serviceRecords )
+                {
+                    if ( service.getServiceCode().equalsIgnoreCase(searchResults.get(0).getrUID().substring(0, 3)))
+                    {
+                        descriptor = service.getDescription();
+                        break;
+                    }
+                }
+
+                System.out.print("Entry Found");
+                loading(3);
+
+                System.out.printf("\n%-15s | %-30s | %-12s | %s\n", "Request's UID", "Lab Test Type", "Request Date", "Result" );
+                System.out.printf("%-15s | %-30s | %-12s | %s\n", searchResults.get(0).getrUID(), descriptor, searchResults.get(0).getReqDate(), searchResults.get(0).getResults() );
+
+                System.out.println("State reason for deletion:");
+                searchResults.get(0).setDelReason(input.nextLine());
+                searchResults.get(0).setIsDeleted(true);
+
+                System.out.print("Overwritting file");
+
+                // Clears current main arraylist then loads in file for selected service code
+                requestRecords.clear();
+                readRequest( searchResults.get(0).getServiceCode() );
+
+
+                for ( LabResults lbr : requestRecords )
+                {
+                    if ( lbr.getrUID().equalsIgnoreCase(searchResults.get(0).getrUID()) )
+                    {
+                        lbr.setIsDeleted( searchResults.get(0).getIsDeleted() );
+                        lbr.setDelReason( searchResults.get(0).getDelReason() );
+                        // break is a failsafe...
+                        break;
+                    }
+                }
+
+                writeRequest( searchResults.get(0).getServiceCode() );
+                loading(3);
+                System.out.println("File Overwritten!");
+
+            }
+            else if ( searchResults.size() == 0 )
+            {
+                System.out.print("No record found");
+                loading(3);
+            }
+            System.out.println("Do you want to delete another laboratory request? [Y/N]");
+        }
+        while ( !checkAnswer().equalsIgnoreCase("N") );
+
     }
 
     // TODO: Edit Request
@@ -1458,7 +1567,7 @@ public class App {
     public static void editRequest()
     {
 
-
+        
 
     }
 

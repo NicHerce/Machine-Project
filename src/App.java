@@ -369,7 +369,7 @@ public class App {
             table.addCell(cell);
 
             // phone number of patient
-            cell.setPhrase(new Paragraph(String.format("Phone Number: %011d", patient.getPhoneNum())));
+            cell.setPhrase(new Paragraph(String.format("Phone Number: %011d", Long.parseLong(patient.getPhoneNum()))));
             table.addCell(cell);
 
             // create test and result table
@@ -587,7 +587,7 @@ public class App {
                 // display list of multiple patients
                 for (Patient patient : patientRecords) {
                     if(filterSearch(info, patient)) {
-                        System.out.printf("%-13s %-10s %-10s %-11s %-9d %-8s %-15s %-12d %-10d\n",
+                        System.out.printf("%-13s %-10s %-10s %-11s %-9d %-8s %-15s %-12s %-10s\n",
                             patient.getUID(), patient.getLastName(), patient.getFirstName(), 
                             patient.getMiddleName(), patient.getBirthday(), patient.getGender(),
                             patient.getAddress(), patient.getPhoneNum(), patient.getNationalID()
@@ -682,7 +682,7 @@ public class App {
                 // display list of multiple patients
                 for (Patient patient : patientRecords) {
                     if(filterSearch(info, patient)) {
-                        System.out.printf("%-13s %-10s %-10s %-11s %-9d %-8s %-15s %-12d %-10d\n",
+                        System.out.printf("%-13s %-10s %-10s %-11s %-9d %-8s %-15s %-12s %-10s\n",
                             patient.getUID(), patient.getLastName(), patient.getFirstName(), 
                             patient.getMiddleName(), patient.getBirthday(), patient.getGender(),
                             patient.getAddress(), patient.getPhoneNum(), patient.getNationalID()
@@ -780,7 +780,7 @@ public class App {
                 // display list of multiple patients
                 for (Patient patient : patientRecords) {
                     if(filterSearch(answer, patient)) {
-                        System.out.printf("%-13s %-10s %-10s %-11s %-9d %-8s %-15s %-12d %-10d\n",
+                        System.out.printf("%-13s %-10s %-10s %-11s %-9d %-8s %-15s %-12s %-10s\n",
                             patient.getUID(), patient.getLastName(), patient.getFirstName(), 
                             patient.getMiddleName(), patient.getBirthday(), patient.getGender(),
                             patient.getAddress(), patient.getPhoneNum(), patient.getNationalID()

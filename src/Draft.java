@@ -25,7 +25,9 @@ public class Draft {
         readRecord();
         System.out.println("successfully read files");
 
-        deleteService();
+        editService();
+        
+        // manageServiceRecord();
 
         // do{
         //     mainMenu();
@@ -41,36 +43,26 @@ public class Draft {
 
     // Add New Service
     public static void addService() {      
-        String answer;
         clear();
 
         try {
-            do {
-                // reset answer at start of loop
-                answer = "N";
+            
+            // 3 character code for the service
+            System.out.print("Enter 3 character code: ");
+            String serviceCode = input.nextLine();
 
-                // 3 character code for the service
-                System.out.print("Enter 3 character code: ");
-                String serviceCode = input.nextLine();
+            // description of service
+            System.out.print("Enter description: ");
+            String description = input.nextLine();
 
-                // description of service
-                System.out.print("Enter description: ");
-                String description = input.nextLine();
+            // price of service
+            System.out.print("Enter price: ");
+            float price = input.nextFloat();
 
-                // price of service
-                System.out.print("Enter price: ");
-                float price = input.nextFloat();
+            // create Service object and store it in serviceRecords ArrayList
+            serviceRecords.add(new Service(serviceCode, description, price, false, ""));
 
-                // create Service object and store it in serviceRecords ArrayList
-                serviceRecords.add(new Service(serviceCode, description, price, false, ""));
-
-                System.out.println(serviceCode + " " + description + " has been added.\n");
-
-                // ask if user wants to add another service
-                System.out.print("Do you want to add another service? [Y/N]: ");
-                answer = checkAnswer();
-
-            } while ("Y".equalsIgnoreCase(answer));            
+            System.out.println(serviceCode + " " + description + " has been added.\n");           
 
         } catch (Exception e) {
             System.out.println("Error occured.");
@@ -78,6 +70,51 @@ public class Draft {
         }
         
     } 
+
+    // Search Service Record:
+    public static void searchService() throws MalformedURLException, IOException, DocumentException {
+        clear();
+        
+        String answer; // user's input to prompt
+        String info;   // info of services
+        int found;     // counts successful search
+
+        do{
+            // reset variable at start of loop
+            answer = "N";
+            found = 0;
+
+            // input for searching the service in serviceRecord ArrayList
+            System.out.print("\nEnter Service Information: ");
+            info = input.nextLine();
+    
+            // sorts serviceRecords ArrayList alphabetically based on serviceCode
+            Collections.sort(serviceRecords, Comparator.comparing(Service::getServiceCode));
+
+            for (Service service : serviceRecords) {
+                if (info.equalsIgnoreCase(service.getServiceCode()) || service.getDescription().contains(info)) {
+                    // count successful search
+                    found++;
+
+                    // header
+                    if(found == 1) System.out.printf("%-12s %-30s %s\n", "Service Code", "Description", "Price");
+                    
+                    // list
+                    System.out.printf("%-12s %-30s %.2f\n", service.getServiceCode(), service.getDescription(), service.getPrice());
+                }
+
+            }
+
+            // search unsuccessful
+            if (found == 0) { 
+                System.out.println("No record found.");
+                System.out.print("\nSearch again? [Y/N] ");
+                answer = checkAnswer();
+            }
+
+        } while ("Y".equalsIgnoreCase(answer));
+
+    }
 
     // Delete a Service
     public static void deleteService() {
@@ -127,6 +164,7 @@ public class Draft {
                 }
 
             } else if (found > 1) { // multiple search results
+                // ask user to input service code to delete service
                 System.out.print("Enter service code of the service to delete: ");
                 info = input.nextLine();
 
@@ -151,48 +189,106 @@ public class Draft {
 
     }
 
-    // Search Service Record:
-    public static void searchService() throws MalformedURLException, IOException, DocumentException {
+    // Edit a Service
+    public static void editService() {
         clear();
         
         String answer; // user's input to prompt
         String info;   // info of services
         int found;     // counts successful search
+        Boolean error; // indicates if there is an error
 
-        do{
-            // reset variable at start of loop
-            answer = "N";
-            found = 0;
+        System.out.print(
+            "The services cannot be edited. If you would like to edit an existing service," +
+            "the service will first be deleted, and new service will be created.\nWould you like to proceed? [Y/N]:"
+        );
+        answer = checkAnswer();
 
-            // input for searching the service in serviceRecord ArrayList
-            System.out.print("\nEnter Service Information: ");
-            info = input.nextLine();
+        // user agrees to process
+        if ("Y".equalsIgnoreCase(answer)) {
+            do{
+                do {
+                    // reset variable at start of loop
+                    answer = "N";
+                    found = 0;
+                    error = false;
     
-            // sorts serviceRecords ArrayList alphabetically based on serviceCode
-            Collections.sort(serviceRecords, Comparator.comparing(Service::getServiceCode));
+                    try {
+                        // input for searching the service in serviceRecord ArrayList
+                        System.out.print("\nEnter Service Information: ");
+                        info = input.nextLine();
+                
+                        // sorts serviceRecords ArrayList alphabetically based on serviceCode
+                        Collections.sort(serviceRecords, Comparator.comparing(Service::getServiceCode));
+    
+                        for (Service service : serviceRecords) {
+                            if (info.equalsIgnoreCase(service.getServiceCode()) || service.getDescription().contains(info)) {
+                                // count successful search
+                                found++;
+    
+                                // header
+                                if(found == 1) System.out.printf("%-12s %-30s %s\n", "Service Code", "Description", "Price");
+                                
+                                // list
+                                System.out.printf("%-12s %-30s %.2f\n", service.getServiceCode(), service.getDescription(), service.getPrice());
+                            }
+    
+                        }
+    
+                        // one search result
+                        if (found == 1) {
+                            for (Service service : serviceRecords) {
+                                if (info.equalsIgnoreCase(service.getServiceCode()) || service.getDescription().contains(info)) {
+                                    // set isDeleted attribute = true to indicate that service object is deleted
+                                    service.setIsDeleted(true);
+    
+                                    // ask user for reason for deletion, set Reason attribute to the user input
+                                    System.out.print("Reason for deletion: ");
+                                    service.setReason(input.nextLine());
+    
+                                    addService();
+                                }
+                            }
+    
+                        } else if (found > 1) { // multiple search results
+                            // ask user to input service code to delete service
+                            System.out.print("Enter service code of the service to delete: ");
+                            info = input.nextLine();
+    
+                            for (Service service : serviceRecords) {
+                                if (info.equalsIgnoreCase(service.getServiceCode())) {
+                                    // set isDeleted attribute = true to indicate that service object is deleted
+                                    service.setIsDeleted(true);
+    
+                                    // ask user for reason for deletion, set Reason attribute to the user input
+                                    System.out.print("Reason for deletion: ");
+                                    service.setReason(input.nextLine());
 
-            for (Service service : serviceRecords) {
-                if (info.equalsIgnoreCase(service.getServiceCode()) || service.getDescription().contains(info)) {
-                    // count successful search
-                    found++;
+                                    addService();
+                                }
+                            }
+    
+                        } else { // (found == 0) search unsuccessful
+                            System.out.println("No record found.");
+                            System.out.print("\nSearch again? [Y/N] ");
+                            answer = checkAnswer();
+                        }
+    
+                        // ask user if they want to repeat transaction
+                        System.out.print("Do you want to edit another service? [Y/N]: ");
+                        answer = checkAnswer();
+    
+                    } catch (Exception e) {
+                        error = true;
+                        System.out.println("Error occured.");
+                        e.printStackTrace();
+                    }
+    
+                } while ("Y".equalsIgnoreCase(answer)); // repeats process if user wants to edit another service
+    
+            } while (error == true); // repeat process if the system encounters an error
 
-                    // header
-                    if(found == 1) System.out.printf("%-12s %-30s %s\n", "Service Code", "Description", "Price");
-                    
-                    // list
-                    System.out.printf("%-12s %-30s %.2f\n", service.getServiceCode(), service.getDescription(), service.getPrice());
-                }
-
-            }
-
-            // search unsuccessful
-            if (found == 0) { 
-                System.out.println("No record found.");
-                System.out.print("\nSearch again? [Y/N] ");
-                answer = checkAnswer();
-            }
-
-        } while ("Y".equalsIgnoreCase(answer));
+        }
 
     }
 
@@ -424,11 +520,18 @@ public class Draft {
         }
     }
 
+    /*/ 
+     *    
+    /*/
+
     // Manage Service Records
     public static void manageServiceRecord() throws MalformedURLException, IOException, DocumentException {
         clear();
         
-        int answer;
+        int transaction;
+        String answer; // user's input to prompt
+        String info;   // info of services
+        int found;     // counts successful search
 
         System.out.print (
             "Manage Service Records\n" +
@@ -440,13 +543,97 @@ public class Draft {
             "Select a transaction: "
         );
 
-        answer = checkInput(0, 4);
+        transaction = checkInput(0, 4);
 
-        switch(answer) {
-            case 0: mainMenu(); break;
-            case 1: addService(); break;
-            case 4: searchService(); break;
+        clear();
+
+        // Add New Service transaction
+        if (transaction == 1) {
+            do {
+                // reset answer at start of loop
+                answer = "N";
+
+                addService();
+
+                // ask if user wants to add another service
+                System.out.print("Do you want to add another service? [Y/N]: ");
+                answer = checkAnswer();
+
+            } while ("Y".equalsIgnoreCase(answer));  
+
+        } else if (transaction > 1 ) { // transaction is Edit, Delete, Search
+            do{
+                // reset variable at start of loop
+                answer = "N";
+                found = 0;
+    
+                // input for searching the service in serviceRecord ArrayList
+                System.out.print("\nEnter Service Information: ");
+                info = input.nextLine();
+        
+                // sorts serviceRecords ArrayList alphabetically based on serviceCode
+                Collections.sort(serviceRecords, Comparator.comparing(Service::getServiceCode));
+    
+                for (Service service : serviceRecords) {
+                    // list of results
+                    if (info.equalsIgnoreCase(service.getServiceCode()) || service.getDescription().contains(info)) {
+                        // count successful search
+                        found++;
+    
+                        // header
+                        if(found == 1) System.out.printf("%-12s %-30s %s\n", "Service Code", "Description", "Price");
+                        
+                        // list
+                        System.out.printf("%-12s %-30s %.2f\n", service.getServiceCode(), service.getDescription(), service.getPrice());
+                    }
+    
+                }
+                
+                // one search result
+                if (found == 1) {
+                    for (Service service : serviceRecords) {
+                        if (info.equalsIgnoreCase(service.getServiceCode()) || service.getDescription().contains(info)) {
+                            // 3 == delete service
+                            if(transaction == 3) {
+                                // set isDeleted attribute = true to indicate that service object is deleted
+                                service.setIsDeleted(true);
+    
+                                // ask user for reason for deletion, set Reason attribute to the user input
+                                System.out.print("Reason for deletion: ");
+                                service.setReason(input.nextLine());
+                            }
+                            
+                        }
+                    }
+    
+                } else if (found > 1) { // multiple search results
+                    System.out.print("Enter service code of the service to delete: ");
+                    info = input.nextLine();
+    
+                    for (Service service : serviceRecords) {
+                        if (info.equalsIgnoreCase(service.getServiceCode())) {
+                            // 3 == delete service
+                            if (transaction == 3) {
+                                // set isDeleted attribute = true to indicate that service object is deleted
+                                service.setIsDeleted(true);
+    
+                                // ask user for reason for deletion, set Reason attribute to the user input
+                                System.out.print("Reason for deletion: ");
+                                service.setReason(input.nextLine());
+                            }
+                        }
+                    }
+    
+                } else { // (found == 0) search unsuccessful
+                    System.out.println("No record found.");
+                    System.out.print("\nSearch again? [Y/N] ");
+                    answer = checkAnswer();
+                }
+    
+            } while ("Y".equalsIgnoreCase(answer));
+
         }
+
     }
 
     // Checks whether the user's input is within the choices:

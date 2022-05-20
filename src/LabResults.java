@@ -100,7 +100,11 @@ public class LabResults
     }
 
     public String getServiceCode() {
-        return serviceCode;
+
+        if ( serviceCode == null )
+            return rUID.substring(0, 3);
+        else
+            return serviceCode;
     }
 
     public void setServiceCode(String serviceCode) {

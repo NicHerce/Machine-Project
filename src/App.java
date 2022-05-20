@@ -2,7 +2,6 @@
     Medical Laboratory Information System 
 */
 
-// TODO: Create separate class files for each section of App.java
 // Essentially Utilities will be placed in Utilities.java, 
 // Patient in Patients.java (Maybe we can get away with putting it in Patient.java),
 // ETC... ETC...
@@ -33,8 +32,7 @@ public class App {
 
         do{
 
-            editRequest();
-            //mainMenu();
+            mainMenu();
             
             // Ask user if they want to make another transaction
             System.out.print("\nReturn to Main Menu? [Y/N]: ");
@@ -125,7 +123,7 @@ public class App {
                     if ("D".equals(parts[3])) deleted = true;
                     reason = parts[4];
 
-                    System.out.printf("%s;%s;%.f;D;%s;\n", serviceCode, description, price, reason);
+                    System.out.printf("%s;%s;%.2f;D;%s;\n", serviceCode, description, price, reason);
 
                 } else {
                     // check record
@@ -985,10 +983,10 @@ public class App {
                 searchRequest();
             break;
             case 3: 
-                //deleteRequest(); 
+                deleteRequest(); 
             break;
             case 4: 
-                //deleteRequest(); 
+                editRequest(); 
             break;
         }
     }
@@ -1050,6 +1048,7 @@ public class App {
             System.out.print("Confirm Request [Y/N]? ");
             if ( checkAnswer().equalsIgnoreCase("y") )
             {
+                clear();
                 requestRecords.add(lbr);
                 writeRequest( service.getServiceCode() );
                 System.out.print( "Laboratory Request " + lbr.rUID + " has been added to file " + service.getServiceCode() +"_Requests.txt.");
@@ -1057,6 +1056,7 @@ public class App {
             }
             else
             {
+                clear();
                 System.out.print("Request not added");
                 loading(3);
             }
@@ -1064,6 +1064,7 @@ public class App {
             // Flushes records for other sessions
             requestRecords.clear();
             
+            clear();
             System.out.println( "Do you want to add another Laboratory Request? [Y/N]" );
         }
         while ( !checkAnswer().equalsIgnoreCase("N") );
@@ -1076,7 +1077,6 @@ public class App {
 
         return serviceCode + LocalDate.now().format( DateTimeFormatter.ofPattern("YYYYMMdd")) + id;
     }
-
 
     // Writes on all files
     public static void writeRequest()
@@ -1389,7 +1389,6 @@ public class App {
 
     }
 
-
     // TODO: implement delete check here
     // non-case sensitive but requires exact code
     public static void searchRequest()
@@ -1452,11 +1451,8 @@ public class App {
 
     }
 
-    // TODO: Delete Request
-
     public static void deleteRequest()
     {
-
         readRequest();
 
         do 
@@ -1562,9 +1558,7 @@ public class App {
         while ( !checkAnswer().equalsIgnoreCase("N") );
 
     }
-
-    // TODO: Edit Request
-
+    
     public static void editRequest()
     {
 
@@ -1669,4 +1663,5 @@ public class App {
         }
         while ( !checkAnswer().equalsIgnoreCase("N") );
     }
+
 }

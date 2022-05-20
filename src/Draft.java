@@ -644,7 +644,8 @@ public class Draft {
                                 }
                             }
 
-                            addService();
+                            // execute addService if transaction is Edit Service
+                            if (transaction == 2) addService();
 
                         } 
                         

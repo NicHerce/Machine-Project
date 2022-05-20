@@ -19,19 +19,21 @@ public class Draft {
     private static ArrayList<Service> serviceRecords = new ArrayList<Service>();
 
     public static void main(String[] args) throws Exception {
-        String answer;
+        // String answer;
         
         // Reads Patients.txt file to get records
         readRecord();
         System.out.println("successfully read files");
 
-        do{
-            mainMenu();
+        deleteService();
+
+        // do{
+        //     mainMenu();
             
-            // Ask user if they want to make another transaction
-            System.out.print("\nReturn to Main Menu? [Y/N]: ");
-            answer = input.next(); input.nextLine();
-        }while("y".equalsIgnoreCase(answer));
+        //     // Ask user if they want to make another transaction
+        //     System.out.print("\nReturn to Main Menu? [Y/N]: ");
+        //     answer = input.next(); input.nextLine();
+        // }while("y".equalsIgnoreCase(answer));
         
         // Write records to Patients.txt file
         writeRecord();
@@ -77,6 +79,78 @@ public class Draft {
         
     } 
 
+    // Delete a Service
+    public static void deleteService() {
+        clear();
+        
+        String answer; // user's input to prompt
+        String info;   // info of services
+        int found;     // counts successful search
+
+        do{
+            // reset variable at start of loop
+            answer = "N";
+            found = 0;
+
+            // input for searching the service in serviceRecord ArrayList
+            System.out.print("\nEnter Service Information: ");
+            info = input.nextLine();
+    
+            // sorts serviceRecords ArrayList alphabetically based on serviceCode
+            Collections.sort(serviceRecords, Comparator.comparing(Service::getServiceCode));
+
+            for (Service service : serviceRecords) {
+                if (info.equalsIgnoreCase(service.getServiceCode()) || service.getDescription().contains(info)) {
+                    // count successful search
+                    found++;
+
+                    // header
+                    if(found == 1) System.out.printf("%-12s %-30s %s\n", "Service Code", "Description", "Price");
+                    
+                    // list
+                    System.out.printf("%-12s %-30s %.2f\n", service.getServiceCode(), service.getDescription(), service.getPrice());
+                }
+
+            }
+
+            // one search result
+            if (found == 1) {
+                for (Service service : serviceRecords) {
+                    if (info.equalsIgnoreCase(service.getServiceCode()) || service.getDescription().contains(info)) {
+                        // set isDeleted attribute = true to indicate that service object is deleted
+                        service.setIsDeleted(true);
+
+                        // ask user for reason for deletion, set Reason attribute to the user input
+                        System.out.print("Reason for deletion: ");
+                        service.setReason(input.nextLine());
+                    }
+                }
+
+            } else if (found > 1) { // multiple search results
+                System.out.print("Enter service code of the service to delete: ");
+                info = input.nextLine();
+
+                for (Service service : serviceRecords) {
+                    if (info.equalsIgnoreCase(service.getServiceCode())) {
+                        // set isDeleted attribute = true to indicate that service object is deleted
+                        service.setIsDeleted(true);
+
+                        // ask user for reason for deletion, set Reason attribute to the user input
+                        System.out.print("Reason for deletion: ");
+                        service.setReason(input.nextLine());
+                    }
+                }
+
+            } else { // (found == 0) search unsuccessful
+                System.out.println("No record found.");
+                System.out.print("\nSearch again? [Y/N] ");
+                answer = checkAnswer();
+            }
+
+        } while ("Y".equalsIgnoreCase(answer));
+
+    }
+
     // Search Service Record:
     public static void searchService() throws MalformedURLException, IOException, DocumentException {
         clear();
@@ -90,7 +164,7 @@ public class Draft {
             answer = "N";
             found = 0;
 
-            // input for searching patient in the records
+            // input for searching the service in serviceRecord ArrayList
             System.out.print("\nEnter Service Information: ");
             info = input.nextLine();
     
@@ -99,21 +173,20 @@ public class Draft {
 
             for (Service service : serviceRecords) {
                 if (info.equalsIgnoreCase(service.getServiceCode()) || service.getDescription().contains(info)) {
-                    
-                    if(found == 0) {
-                        // header
-                        System.out.printf("%-12s %-30s %s\n", "Service Code", "Description", "Price");
-                    }
+                    // count successful search
+                    found++;
+
+                    // header
+                    if(found == 1) System.out.printf("%-12s %-30s %s\n", "Service Code", "Description", "Price");
                     
                     // list
                     System.out.printf("%-12s %-30s %.2f\n", service.getServiceCode(), service.getDescription(), service.getPrice());
-
-                    found++;
                 }
 
             }
 
-            if (found == 0) { // search unsuccessful
+            // search unsuccessful
+            if (found == 0) { 
                 System.out.println("No record found.");
                 System.out.print("\nSearch again? [Y/N] ");
                 answer = checkAnswer();

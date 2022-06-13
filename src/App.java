@@ -309,17 +309,20 @@ public class App {
             
         try {
             
+            System.out.println( "Enter Request ID: " );
+            String rUID = input.nextLine();
+
+            LabResults lbr = returnRequest( rUID );
+
             // create document object
             Document doc = new Document();
 
             // create PdfWriter object for writing content
-            String fileName = patient.getLastName() + "_" + "Request UID" + ".pdf";
+            String fileName = patient.getLastName() + "_" + lbr.rUID + lbr.reqDate + ".pdf";
             PdfWriter.getInstance(doc, new FileOutputStream(fileName));
 
             // open the Document 
             doc.open();
-
-            ArrayList<LabResults> labResults = returnRequests(patient.getUID());
 
             // create new image object with filename of the company logo
             Image img = Image.getInstance("logo.png");
@@ -388,13 +391,10 @@ public class App {
             tableTwo.addCell(cell);
 
             // for loop for table contents
-            for ( LabResults lbr : labResults )
-            {
-                cell.setPhrase(new Paragraph( lbr.getServiceCode() ));
-                tableTwo.addCell(cell);
-                cell.setPhrase(new Paragraph( lbr.getResults() ));
-                tableTwo.addCell(cell);
-            }
+            cell.setPhrase(new Paragraph( lbr.getServiceCode() ));
+            tableTwo.addCell(cell);
+            cell.setPhrase(new Paragraph( lbr.getResults() ));
+            tableTwo.addCell(cell);
 
             // add the contents to the document
             doc.add(img);
@@ -825,7 +825,10 @@ public class App {
                         System.out.print("Do you want to print a laboratory test result? [Y/N]: ");
                         answer = checkAnswer();
 
-                        if("Y".equalsIgnoreCase(answer)) printPDF(patient);
+                        if("Y".equalsIgnoreCase(answer))
+                        {
+                            printPDF(patient);
+                        } 
 
                         answer = "N";
                     }
@@ -1784,37 +1787,21 @@ public class App {
 
     }
 
-    public static ArrayList<LabResults> returnRequests( String pUID )
+    public static LabResults returnRequest( String rUID )
     {
 
         readRequest();
-
-        ArrayList<LabResults> searchResults = new ArrayList<LabResults>();
 
         // For each lbr in request records check if key matches request uid or patient uid
         // I can probably turn this into a seperate function/method
         for ( LabResults lbr : requestRecords )
         {
-            if ( lbr.getpUID().equalsIgnoreCase( pUID ) )
-            {
-                // Checks if entry is not deleted, adds if null
-                if ( lbr.getIsDeleted() == null )
-                searchResults.add(lbr);
-            }
+            if ( lbr.getIsDeleted() == null )
+            if ( lbr.getrUID().equalsIgnoreCase( rUID ))
+            return lbr;
         }
 
-        // Sorts searchResults
-        Collections.sort( searchResults, Comparator.comparing( LabResults::getReqDate ).thenComparing( LabResults::getrUID ).reversed() );
-
-        // Return null if empty
-        if ( searchResults.isEmpty() )
-        {
-            return null;
-        }
-        else
-        {
-            return searchResults;
-        }
+        return null;
     }
 
     public static void deleteRequest()

@@ -308,11 +308,17 @@ public class App {
         String fullname = patient.getLastName() + ", " + patient.getFirstName() + " " + patient.getMiddleName();
             
         try {
+            
+            System.out.println( "Enter Request ID: " );
+            String rUID = input.nextLine();
+
+            LabResults lbr = returnRequest( rUID );
+
             // create document object
             Document doc = new Document();
 
             // create PdfWriter object for writing content
-            String fileName = patient.getLastName() + "_" + "Request UID" + ".pdf";
+            String fileName = patient.getLastName() + "_" + lbr.rUID + lbr.reqDate + ".pdf";
             PdfWriter.getInstance(doc, new FileOutputStream(fileName));
 
             // open the Document 
@@ -382,6 +388,12 @@ public class App {
             tableTwo.addCell(cell);
 
             cell.setPhrase(new Paragraph("Result"));
+            tableTwo.addCell(cell);
+
+            // for loop for table contents
+            cell.setPhrase(new Paragraph( lbr.getServiceCode() ));
+            tableTwo.addCell(cell);
+            cell.setPhrase(new Paragraph( lbr.getResults() ));
             tableTwo.addCell(cell);
 
             // add the contents to the document
@@ -813,7 +825,10 @@ public class App {
                         System.out.print("Do you want to print a laboratory test result? [Y/N]: ");
                         answer = checkAnswer();
 
-                        if("Y".equalsIgnoreCase(answer)) printPDF(patient);
+                        if("Y".equalsIgnoreCase(answer))
+                        {
+                            printPDF(patient);
+                        } 
 
                         answer = "N";
                     }
@@ -1712,7 +1727,6 @@ public class App {
 
     }
 
-    // TODO: implement delete check here
     // non-case sensitive but requires exact code
     public static void searchRequest()
     {
@@ -1728,7 +1742,6 @@ public class App {
             System.out.println("Input Request UID or Patient UID: ");
             String key = input.nextLine();
             String descriptor = "";
-            int found = 0;
 
             // For each lbr in request records check if key matches request uid or patient uid
             for ( LabResults lbr : requestRecords )
@@ -1772,6 +1785,23 @@ public class App {
         }
         while ( !checkAnswer().equalsIgnoreCase("N") );
 
+    }
+
+    public static LabResults returnRequest( String rUID )
+    {
+
+        readRequest();
+
+        // For each lbr in request records check if key matches request uid or patient uid
+        // I can probably turn this into a seperate function/method
+        for ( LabResults lbr : requestRecords )
+        {
+            if ( lbr.getIsDeleted() == null )
+            if ( lbr.getrUID().equalsIgnoreCase( rUID ))
+            return lbr;
+        }
+
+        return null;
     }
 
     public static void deleteRequest()

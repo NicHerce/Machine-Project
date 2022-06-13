@@ -308,6 +308,7 @@ public class App {
         String fullname = patient.getLastName() + ", " + patient.getFirstName() + " " + patient.getMiddleName();
             
         try {
+            
             // create document object
             Document doc = new Document();
 
@@ -317,6 +318,8 @@ public class App {
 
             // open the Document 
             doc.open();
+
+            ArrayList<LabResults> labResults = returnRequests(patient.getUID());
 
             // create new image object with filename of the company logo
             Image img = Image.getInstance("logo.png");
@@ -383,6 +386,15 @@ public class App {
 
             cell.setPhrase(new Paragraph("Result"));
             tableTwo.addCell(cell);
+
+            // for loop for table contents
+            for ( LabResults lbr : labResults )
+            {
+                cell.setPhrase(new Paragraph( lbr.getServiceCode() ));
+                tableTwo.addCell(cell);
+                cell.setPhrase(new Paragraph( lbr.getResults() ));
+                tableTwo.addCell(cell);
+            }
 
             // add the contents to the document
             doc.add(img);
@@ -1712,7 +1724,6 @@ public class App {
 
     }
 
-    // TODO: implement delete check here
     // non-case sensitive but requires exact code
     public static void searchRequest()
     {
@@ -1728,7 +1739,6 @@ public class App {
             System.out.println("Input Request UID or Patient UID: ");
             String key = input.nextLine();
             String descriptor = "";
-            int found = 0;
 
             // For each lbr in request records check if key matches request uid or patient uid
             for ( LabResults lbr : requestRecords )
@@ -1772,6 +1782,39 @@ public class App {
         }
         while ( !checkAnswer().equalsIgnoreCase("N") );
 
+    }
+
+    public static ArrayList<LabResults> returnRequests( String pUID )
+    {
+
+        readRequest();
+
+        ArrayList<LabResults> searchResults = new ArrayList<LabResults>();
+
+        // For each lbr in request records check if key matches request uid or patient uid
+        // I can probably turn this into a seperate function/method
+        for ( LabResults lbr : requestRecords )
+        {
+            if ( lbr.getpUID().equalsIgnoreCase( pUID ) )
+            {
+                // Checks if entry is not deleted, adds if null
+                if ( lbr.getIsDeleted() == null )
+                searchResults.add(lbr);
+            }
+        }
+
+        // Sorts searchResults
+        Collections.sort( searchResults, Comparator.comparing( LabResults::getReqDate ).thenComparing( LabResults::getrUID ).reversed() );
+
+        // Return null if empty
+        if ( searchResults.isEmpty() )
+        {
+            return null;
+        }
+        else
+        {
+            return searchResults;
+        }
     }
 
     public static void deleteRequest()

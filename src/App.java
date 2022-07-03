@@ -27,7 +27,7 @@ public class App {
     public static void main(String[] args) throws Exception {
         String answer;
 
-        // Reads Patients.txt file to get records
+        // Reads txt file to get records
         readRecord();
 
         do{
@@ -48,7 +48,7 @@ public class App {
      *  Utilities
     /*/
 
-    // Reads Patients.txt file to get records
+    // Reads txt files to get records
     public static void readRecord() {
         
         // reads Patients.txt file

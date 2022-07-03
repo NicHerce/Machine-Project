@@ -27,7 +27,7 @@ public class App {
     public static void main(String[] args) throws Exception {
         String answer;
 
-        // Reads txt file to get records
+        // Reads txt files to get records
         readRecord();
 
         do{

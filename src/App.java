@@ -359,7 +359,7 @@ public class App {
             table.addCell(cell);
             
             // collection date of specimen
-            cell.setPhrase(new Paragraph("Collection Date: "));
+            cell.setPhrase(new Paragraph("Collection Date: " + lbr.getReqDate()));
             table.addCell(cell);
 
             // age of patient 

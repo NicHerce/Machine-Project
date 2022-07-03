@@ -1,4 +1,5 @@
 public class Service {
+    // Service attributes:
     private String serviceCode;
     private String description;
     private double price;

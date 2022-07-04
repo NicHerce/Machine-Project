@@ -1554,14 +1554,13 @@ public class App {
 
                 Scanner scanner = new Scanner( outputFile );
                 String current;
-                String parts[] = {};
 
                 while ( scanner.hasNextLine() )
                 { 
                     current = scanner.nextLine();
-                    parts = current.split(";");
+                    String parts[] = current.split(";");
 
-                    if ( parts.length > 5 )
+                    if ( parts.length > 6 )
                     {
                         requestRecords.add( new LabResults( parts[0], parts[1], parts[2], parts[3], parts[4], true, parts[6], parts[0].substring(0, 3) ) );
                     }
@@ -1756,7 +1755,7 @@ public class App {
             // Sorts searchResults
             Collections.sort( searchResults, Comparator.comparing( LabResults::getReqDate ).thenComparing( LabResults::getrUID ).reversed() );
 
-            if ( searchResults.size() > 1 )
+            if ( searchResults.size() >= 1 )
             {
                 System.out.printf("%-15s | %-30s | %-12s | %s\n", "Request's UID", "Lab Test Type", "Request Date", "Result" );
                 for ( LabResults lbr : searchResults )        
@@ -1770,7 +1769,7 @@ public class App {
                         }
                     }
                     
-                    if ( lbr.getIsDeleted() == false )
+                    if ( lbr.getIsDeleted() == null )
                     System.out.printf("%-15s | %-30s | %-12s | %s\n", lbr.getrUID(), descriptor, lbr.getReqDate(), lbr.getResults() );
                 }
             }

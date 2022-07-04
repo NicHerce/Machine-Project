@@ -838,7 +838,7 @@ public class App {
 
                         if ( searchResults.size() >= 1 )
                         {
-                            System.out.printf("%-15s %-24s %-8s %-25s\n","Request's UID", "Lab Test Type", "Request Date", "Result");
+                            System.out.printf("%-15s %-24s %-11s %-25s\n","Request's UID", "Lab Test Type", "Request Date", "Result");
                             for ( LabResults lbr : searchResults )        
                             {
                                 for ( Service service : serviceRecords )
@@ -850,7 +850,7 @@ public class App {
                                     }
                                 }
 
-                                System.out.printf("%-15s %-24s %-8s %-25s\n",
+                                System.out.printf("%-15s %-24s %-12s %-25s\n",
                                      lbr.getrUID(), descriptor, lbr.getReqDate(), lbr.getResults()
                                     );
 

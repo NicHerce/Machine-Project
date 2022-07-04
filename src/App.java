@@ -39,7 +39,7 @@ public class App {
             answer = input.next(); input.nextLine();
         }while("y".equalsIgnoreCase(answer));
         
-        // Write records to Patients.txt file
+        // Write records to text files
         writeRecord();
     }
 

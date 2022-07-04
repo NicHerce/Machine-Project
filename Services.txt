@@ -1,6 +1,6 @@
-CAT;Covid-19 Antigen Test;1000.0;D;ginawang siopao yung CAT;
-CBT;Covid-19 Antibody Test;500.0;D;cukenboltorcha;
+CAT;Covid-19 Antigen Test;1000.0;
+CBT;Covid-19 Antibody Test;500.0;
 CRP;Covid-19 RT-PCR;2000.0;
 CUT;Head Amputation;420.0;
-INK;Tattoo;200.0;D;wala lang;
-MUD;Mud Bath;100.0;D;there was a poop accident;
+INK;Tattoo;200.0;
+MUD;Mud Bath;100.0;

@@ -1992,12 +1992,6 @@ public class App {
                     }
                     System.out.printf("%-15s | %-30s | %-12s | %s\n", lbr.getrUID(), descriptor, lbr.getReqDate(), lbr.getResults() );
                 }
-
-                // User inputs id of to be deleted
-                System.out.println("\nInput UID of Request to be deleted: ");
-                String answer = input.nextLine();
-                // Removes all that does not match
-                searchResults.removeIf( e -> !e.rUID.equalsIgnoreCase(answer) );
                 
             }
 

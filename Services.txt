@@ -1,6 +1,9 @@
+CAN;calisthenics;420.0;
 CAT;Covid-19 Antigen Test;1000.0;D;ginawang siopao yung CAT;
 CBT;Covid-19 Antibody Test;500.0;D;cukenboltorcha;
 CRP;Covid-19 RT-PCR;2000.0;
 CUT;Head Amputation;420.0;
 INK;Tattoo;200.0;D;wala lang;
+MSG;massage;500.0;D;lockdown;
 MUD;Mud Bath;100.0;D;there was a poop accident;
+TKL;tickle;50.0;D;no more laughs;

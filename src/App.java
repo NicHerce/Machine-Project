@@ -809,12 +809,13 @@ public class App {
             if(found == 1) { 
                 for (Patient patient : patientRecords) {
                     if(filterSearch(answer, patient)) {
-                        System.out.println(
-                            patient.getUID() + "\n" +
-                            patient.getLastName() + ", " + patient.getFirstName() + " " + 
-                            patient.getMiddleName() + "\n" + patient.getBirthday() + "\n" +
-                            patient.getAddress() + "\n" + patient.getPhoneNum() + "\n" + 
-                            patient.getNationalID() + "\n"
+                        System.out.printf("%-16s %s\n%-16s %s\n%-16s %d\n%-16s %s\n%-16s %s\n%-16s %s\n\n",
+                            "Patient's UID:", patient.getUID(), 
+                            "Name:", patient.getLastName() + ", " + patient.getFirstName() + " " + patient.getMiddleName(), 
+                            "Birthday:", patient.getBirthday(),
+                            "Address:", patient.getAddress(), 
+                            "Phone Number:", patient.getPhoneNum(), 
+                            "National ID no.:", patient.getNationalID()
                         );
 
                         System.out.printf("%-13s %-13s %-12s %-15s\n",
@@ -825,8 +826,7 @@ public class App {
                         System.out.print("Do you want to print a laboratory test result? [Y/N]: ");
                         answer = checkAnswer();
 
-                        if("Y".equalsIgnoreCase(answer))
-                        {
+                        if("Y".equalsIgnoreCase(answer)) {
                             printPDF(patient);
                         } 
 

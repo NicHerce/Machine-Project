@@ -2046,7 +2046,6 @@ public class App {
             else if ( searchResults.size() == 0 )
             {
                 System.out.print("No record found");
-                loading(3);
             }
             System.out.println("Do you want to edit another laboratory request? [Y/N]");
         }

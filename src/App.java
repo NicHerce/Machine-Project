@@ -818,9 +818,46 @@ public class App {
                             "National ID no.:", patient.getNationalID()
                         );
 
-                        System.out.printf("%-13s %-13s %-12s %-15s\n",
-                            "Request's UID", "Lab Test Type", "Request Date", "Result"
-                        );
+                        readRequest();
+
+                        ArrayList<LabResults> searchResults = new ArrayList<LabResults>();
+
+                        String descriptor = "";
+                        // For each lbr in request records check if key matches request uid or patient uid
+                        for ( LabResults lbr : requestRecords )
+                        {
+                            if ( lbr.getpUID().equalsIgnoreCase( patient.getUID() ) )
+                            {
+                                if ( lbr.getIsDeleted() == null )
+                                searchResults.add(lbr);
+                            }
+                        }
+
+                        // Sorts searchResults
+                        Collections.sort( searchResults, Comparator.comparing( LabResults::getReqDate ).thenComparing( LabResults::getrUID ).reversed() );
+
+                        if ( searchResults.size() >= 1 )
+                        {
+                            System.out.printf("%-15s %-24s %-8s %-25s\n","Request's UID", "Lab Test Type", "Request Date", "Result");
+                            for ( LabResults lbr : searchResults )        
+                            {
+                                for ( Service service : serviceRecords )
+                                {
+                                    if ( service.getServiceCode().equalsIgnoreCase(lbr.getrUID().substring(0, 3)))
+                                    {
+                                        descriptor = service.getDescription();
+                                        break;
+                                    }
+                                }
+
+                                System.out.printf("%-15s %-24s %-8s %-25s\n",
+                                     lbr.getrUID(), descriptor, lbr.getReqDate(), lbr.getResults()
+                                    );
+
+                            }
+                        }
+
+                        
 
                         // asks user if they want to print laboratory test results
                         System.out.print("Do you want to print a laboratory test result? [Y/N]: ");
@@ -1786,7 +1823,7 @@ public class App {
 
     }
 
-    public static LabResults returnRequest( String rUID )
+    public static LabResults returnRequest( String UID )
     {
 
         readRequest();
@@ -1796,7 +1833,7 @@ public class App {
         for ( LabResults lbr : requestRecords )
         {
             if ( lbr.getIsDeleted() == null )
-            if ( lbr.getrUID().equalsIgnoreCase( rUID ))
+            if ( lbr.getrUID().equalsIgnoreCase( UID ))
             return lbr;
         }
 
